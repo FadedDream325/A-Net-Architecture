@@ -1,0 +1,28 @@
+{
+  "config": {
+    "widths": [
+      128
+    ],
+    "seeds": [
+      2026
+    ],
+    "models": [
+      "anet_full"
+    ],
+    "active_mode": "pair",
+    "repetition_rates": [
+      0.0,
+      0.5
+    ],
+    "batch_sizes": [
+      1
+    ],
+    "requests": 20,
+    "correlation": "medium",
+    "cache_key_mode": "identity",
+    "gradient_isolation": "detach_both",
+    "min_free_vram_gb": 2.0,
+    "max_vram_fraction": 0.8
+  },
+  "config_hash": "5a3f836a3500280b9d88ec400b81729491392b1cfe04eaffdb99e575b7270d6c"
+}

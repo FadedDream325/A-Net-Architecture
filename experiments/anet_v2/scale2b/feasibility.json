@@ -1,0 +1,54 @@
+{
+  "host": "Windows-11-10.0.26300-SP0",
+  "python": "3.14.6",
+  "torch": "2.14.1+cu130",
+  "cuda": "13.0",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "total_gb": 7.933,
+    "free_gb": 6.877,
+    "capability": "12.0",
+    "sm_count": 26
+  },
+  "ram_total_gb": 15.18,
+  "ram_available_gb": 3.66,
+  "cpu_logical": 32,
+  "cpu_physical": 16,
+  "disk_free_gb": 722.0,
+  "parameter_budget": 2000000000,
+  "memory_2b": {
+    "fp32_weights_gb": 8.0,
+    "fp32_grads_gb": 8.0,
+    "adam_fp32_states_gb": 16.0,
+    "fp32_training_total_gb": 32.0,
+    "mixed_precision_weights_fp16_gb": 4.0,
+    "mixed_precision_grads_fp16_gb": 4.0,
+    "mixed_precision_master_fp32_gb": 8.0,
+    "mixed_precision_adam_fp32_gb": 16.0,
+    "mixed_precision_training_total_gb": 32.0
+  },
+  "compute_2b": {
+    "1000000000.0": {
+      "tokens_b": 1.0,
+      "flops": 1.2e+19
+    },
+    "20000000000.0": {
+      "tokens_b": 20.0,
+      "flops": 2.4e+20
+    },
+    "100000000000.0": {
+      "tokens_b": 100.0,
+      "flops": 1.2e+21
+    }
+  },
+  "example_transformer_config": {
+    "vocab": 32000,
+    "d_model": 2240,
+    "layers": 32,
+    "ffn": 8960,
+    "tied_embeddings": true,
+    "parameters": 1998584000,
+    "deviation_from_2b_pct": -0.0708
+  },
+  "verdict": "NO-GO on local hardware: 2B full training needs ~32 GB just for weights/grads/Adam states, plus activations; local GPU has 8 GB and host RAM is 15 GB total."
+}

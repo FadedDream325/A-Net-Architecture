@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# A-Net scaling experiment artifacts
+experiments/scaling/results/preflight*/
+experiments/scaling/results/*/checkpoints/
+experiments/scaling/results/*/*.pt
+pytest-cache-files-*/

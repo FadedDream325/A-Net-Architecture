@@ -1,0 +1,28 @@
+{
+  "scales": [
+    "small"
+  ],
+  "models": [
+    "anet"
+  ],
+  "seeds": [
+    2026
+  ],
+  "epochs": 50,
+  "train_size": 12000,
+  "test_size": 3000,
+  "batch_size": 512,
+  "lr": 0.001,
+  "weight_decay": 0.0001,
+  "device": "cuda",
+  "bench_batches": [
+    1,
+    64,
+    256,
+    1024
+  ],
+  "bench_repeats": 200,
+  "benchmark": true,
+  "save_checkpoints": true,
+  "max_steps": null
+}

@@ -1,0 +1,109 @@
+{
+  "files": {
+    "pytest": {
+      "path": "audit\\stage0\\pytest_stage0.log",
+      "sha256": "65b4a50e058bb29750aa29554f4622442db0bbfc08d78a56093936390cc9e70e",
+      "bytes": 204
+    },
+    "demo": {
+      "path": "audit\\stage0\\legacy_demo_cpu.log",
+      "sha256": "4928707df25ee6be2df888663476f4d0f19c9301ef1a66f89b61e9641f2fadfe",
+      "bytes": 3060
+    },
+    "complex_log": {
+      "path": "audit\\stage0\\complex_tasks_cpu_stage0.log",
+      "sha256": "b3a5a60b716e46b61048eafb5eb19115279370d00ce58fd55d3535fed45a792f",
+      "bytes": 4230
+    },
+    "complex_json": {
+      "path": "audit\\stage0\\.complex_results_cpu.json",
+      "sha256": "6e66b4a458e712931213e2c00d1974bc96fa128498aca8214e4d6e57981a916e",
+      "bytes": 2885
+    },
+    "repro_log": {
+      "path": "audit\\stage0\\repro_small_anet_s2026.log",
+      "sha256": "55017675527afcb1b43458adce26ad88e3eadd387a5a7dd54c4a745c29c1bb94",
+      "bytes": 1290
+    },
+    "repro_raw": {
+      "path": "audit\\stage0\\repro_small_anet_s2026\\raw_runs.jsonl",
+      "sha256": "ffbc2e5958f9e93190f88adfdd1737211ad0f619ec79b8e69ed5e161635e3831",
+      "bytes": 3499
+    },
+    "cuda": {
+      "path": "audit\\stage0\\cuda_compat_stage0.log",
+      "sha256": "0f7bfef1b82ade0cc6622c01b8d6131305db9b560a637fffcbbcd6989d986896",
+      "bytes": 6312
+    }
+  },
+  "results": {
+    "pytest": {
+      "passed": 14,
+      "exit_ok": true
+    },
+    "demo_cpu": {
+      "独立基线": 99.5,
+      "共享主干": 99.42,
+      "A-Net": 99.37
+    },
+    "complex_cpu": {
+      "独立基线": {
+        "average_mean": 96.22963004642064,
+        "average_std": 0.188998731039511,
+        "task_mean": [
+          96.3111122449239,
+          97.86666631698608,
+          94.51111157735188
+        ],
+        "total_params": 51462,
+        "active_params": 51462
+      },
+      "共享主干": {
+        "average_mean": 94.48888831668431,
+        "average_std": 1.2521585817646623,
+        "task_mean": [
+          95.17777562141418,
+          95.15555500984192,
+          93.1333343187968
+        ],
+        "total_params": 17670,
+        "active_params": 17670
+      },
+      "A-Net": {
+        "average_mean": 95.83703676859538,
+        "average_std": 0.14286874331910307,
+        "task_mean": [
+          95.57777643203735,
+          97.99999992052715,
+          93.93333395322163
+        ],
+        "total_params": 25542,
+        "active_params": 8770
+      }
+    },
+    "cuda": {
+      "failures": 0,
+      "pass": true
+    },
+    "scaling_repro": {
+      "run_id": "small__anet__s2026",
+      "accuracy_old": [
+        0.9923332929611206,
+        0.9816666841506958,
+        0.968999981880188
+      ],
+      "accuracy_new": [
+        0.9923332929611206,
+        0.9816666841506958,
+        0.968999981880188
+      ],
+      "accuracy_exact_match": true,
+      "total_params": 100230,
+      "active_params": 33922,
+      "train_seconds_old": 4.998498199999972,
+      "train_seconds_new": 5.565954300000158,
+      "batch1_p50_old_us": 221.00799530744553,
+      "batch1_p50_new_us": 115.40799960494041
+    }
+  }
+}

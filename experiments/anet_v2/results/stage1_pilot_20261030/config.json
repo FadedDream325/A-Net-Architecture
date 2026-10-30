@@ -1,0 +1,52 @@
+{
+  "config": {
+    "widths": [
+      64,
+      128,
+      256,
+      512,
+      1024,
+      2048
+    ],
+    "models": [
+      "independent",
+      "shared",
+      "anet_basic",
+      "anet_full"
+    ],
+    "correlations": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "seeds": [
+      2026,
+      2027,
+      2028,
+      2029,
+      2030
+    ],
+    "epochs": 30,
+    "train_size": 6000,
+    "val_size": 1500,
+    "test_size": 1500,
+    "batch_size": 512,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "active_mode": "sparse",
+    "cache_key_mode": "identity",
+    "device": "cuda",
+    "bench_batches": [
+      1,
+      64,
+      256,
+      1024
+    ],
+    "bench_repeats": 100,
+    "benchmark": true,
+    "reset_cache_each_repeat": true,
+    "save_checkpoints": false,
+    "max_steps": null
+  },
+  "config_hash": "0f66e45df9c531922395094ad2daa6b5398ca22cff703e804a0608526f39ee16"
+}

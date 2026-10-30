@@ -1,0 +1,35 @@
+{
+  "config": {
+    "widths": [
+      64
+    ],
+    "models": [
+      "anet_full"
+    ],
+    "correlations": [
+      "medium"
+    ],
+    "seeds": [
+      2026
+    ],
+    "epochs": 3,
+    "train_size": 6000,
+    "val_size": 1500,
+    "test_size": 1500,
+    "batch_size": 512,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "active_mode": "sparse",
+    "cache_key_mode": "identity",
+    "device": "cuda",
+    "bench_batches": [
+      1,
+      64
+    ],
+    "bench_repeats": 20,
+    "benchmark": true,
+    "save_checkpoints": false,
+    "max_steps": null
+  },
+  "config_hash": "f4c735e786a3a7132c12261ce323e282adfe298ed6c038ae3e9e9437f177eace"
+}

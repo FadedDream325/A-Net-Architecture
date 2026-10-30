@@ -1,0 +1,28 @@
+{
+  "timestamp_utc": "2026-10-30T01:23:19.927271+00:00",
+  "python": "3.14.6 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:29:05) [MSC v.1942 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "cpu_count": 32,
+  "torch": "2.14.1+cu130",
+  "torch_cuda_build": "13.0",
+  "cudnn": 92400,
+  "git_commit": "c68e3206859faf9c1e5327938d124952dcee57f4",
+  "device": "cuda",
+  "torch_threads": 1,
+  "disk_free_gb": 778.76,
+  "gpu_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "gpu_capability": "12.0",
+  "gpu_sm_count": 26,
+  "gpu_total_memory_gb": 7.933,
+  "gpu_free_memory_gb": 6.877,
+  "gpu_arch_list": [
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90",
+    "sm_100",
+    "sm_120"
+  ],
+  "bf16_supported": true
+}

@@ -1,0 +1,330 @@
+{
+  "generated_utc": "2026-10-30T04:39:59.720623+00:00",
+  "git_head": "4752d3bed1df97f36755733e2f7591a1d03aaef8",
+  "git_branch": "experiment/scaling-and-crosslayer",
+  "git_remote": "https://github.com/FadedDream325/A-Net-Architecture.git",
+  "git_log": [
+    "4752d3b (HEAD -> experiment/scaling-and-crosslayer, origin/experiment/scaling-and-crosslayer) Add downloadable A-Net scaling snapshot ZIP",
+    "0dda2fe Add controlled scaling and cross-layer feasibility study",
+    "c68e320 (origin/main, origin/HEAD, main) Add files via upload",
+    "d8ed473 Initial commit"
+  ],
+  "tracked_files": 60,
+  "tracked_bytes": 4005216,
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 5067,
+      "sha256": "b8e668641d8577bf0f04fb984cb0b1fa7add2c2cdb0c2e1c8cfff33431d772f6"
+    },
+    {
+      "path": "A-Net-Architecture-scaling.zip",
+      "bytes": 1671685,
+      "sha256": "2325bceb24c12c9ae74577c057c8299eb8390a6cb42829e128b0e76f553cab16"
+    },
+    {
+      "path": "A-Net_Experiment_Report_V3.pdf",
+      "bytes": 1221125,
+      "sha256": "8f277cd99aa3acf49c7742c8f4bfc816c5b4ab2323cd6d37a0fe0f170f93fcaa"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1091,
+      "sha256": "f13fcebb6be2031a00b7e5894889df8a2bb0b0f4960c87457407d87b55581bdb"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9193,
+      "sha256": "1ca9e1d59219f6fc5d0310fb6ff43c7248f54215d14b639fb0f77ecad2e3e872"
+    },
+    {
+      "path": "architecture_draft_macro.jpg",
+      "bytes": 39494,
+      "sha256": "33dabb39d701cc53dfb5287d832b9e6674f91c4c59944a2ddb559da855ccc30e"
+    },
+    {
+      "path": "architecture_draft_micro.jpg",
+      "bytes": 42839,
+      "sha256": "493e22f5cf6e8f06428ae69f717ec6b4248568caba2677adda4b675a6e35ce67"
+    },
+    {
+      "path": "benchmark_latency.py",
+      "bytes": 6522,
+      "sha256": "8af57c5476cb7c8ea3353fe3705ddb3303341437b025ab7d0ae2775e6423d655"
+    },
+    {
+      "path": "complex_tasks_test.py",
+      "bytes": 10414,
+      "sha256": "8117dc5cd6665d58dddc6c89aeec4ef9fde754e3f6b211b62f9c87331bdb6da5"
+    },
+    {
+      "path": "cuda_compat_test.py",
+      "bytes": 11972,
+      "sha256": "b7c2432883159a3ba21e2e049ce196b669783daa58d31c26a7b6663d83f6566e"
+    },
+    {
+      "path": "experiments/__init__.py",
+      "bytes": 37,
+      "sha256": "e963794c0092de465b6581b24f3f1a0cbec8e4bb18bd9ff955b392470ee71f4a"
+    },
+    {
+      "path": "experiments/scaling/PROTOCOL.md",
+      "bytes": 7756,
+      "sha256": "373cbe70dc2c1aa58374ac95d74e6bc6a08751bb575203594f522d2c8d27a44d"
+    },
+    {
+      "path": "experiments/scaling/REPORT.md",
+      "bytes": 18355,
+      "sha256": "dcc5097be8b975f7ec7709becac76eb9977eb82dd1fbffe1941f712fcd7a87fe"
+    },
+    {
+      "path": "experiments/scaling/__init__.py",
+      "bytes": 43,
+      "sha256": "f04d9bfd48a798229011e79bba308490ea41b1c7c8d2cd119b595dd9535e09c4"
+    },
+    {
+      "path": "experiments/scaling/analyze_results.py",
+      "bytes": 12025,
+      "sha256": "97baa600203834d40b2affd5a7720b10e9c9c0057b1940b0487feadd15c35d13"
+    },
+    {
+      "path": "experiments/scaling/benchmark_cold_start.py",
+      "bytes": 3800,
+      "sha256": "c703198f9eeb68f403666695ed51abbe4d99f662fb87a5898a38c505f58443b4"
+    },
+    {
+      "path": "experiments/scaling/benchmark_cold_starts.py",
+      "bytes": 2338,
+      "sha256": "cec504a42c7c975a441749bd710d8923173e861dbe74989f9c55936010d8f609"
+    },
+    {
+      "path": "experiments/scaling/models.py",
+      "bytes": 7214,
+      "sha256": "0829fb3e1db957ad8847ff7e2e6b1e50994226d5277a642a29c075364ce6cd88"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/config.json",
+      "bytes": 468,
+      "sha256": "470f5348e4ac0ed0dca27bc42f8b4954e51e134ba423c458ff1c98e061280c25"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/environment.json",
+      "bytes": 818,
+      "sha256": "f3d299b7dc85ec71bc99c936e4e37cc2ea8333bda8bd14b16f9ae7653c30aa0a"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/figures/accuracy_vs_active_macs.png",
+      "bytes": 55385,
+      "sha256": "811bedbd0b448c161c471b5bc2ebb6406007d39d1ddd72ff99ce9bdfb576e5a6"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/figures/accuracy_vs_total_params.png",
+      "bytes": 52403,
+      "sha256": "88b722383b3ad686dda7c5d34864531f84ecb72addfd12acb84c121edff219ed"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/figures/throughput_vs_active_macs.png",
+      "bytes": 74994,
+      "sha256": "fcee8e5e1087af9c4f367843f44ef52294dd70a42345124a6f0a8afe901e489e"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/figures/train_memory_vs_params.png",
+      "bytes": 64879,
+      "sha256": "a2eed2d599f4bc8c877bf19c0b4070f8c7e9c18afd51707f093f97d9c0e79018"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/raw_runs.jsonl",
+      "bytes": 32348,
+      "sha256": "b5c5400739dfdb77e1c443693f65ac51351a4cc20f019c3038a5b98a0eed8730"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/summary.csv",
+      "bytes": 1560,
+      "sha256": "b48c3c876a189fb5cb1875b0c00d620f16b5d6db54553d9a5ce1805aa7ac97ca"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/summary.json",
+      "bytes": 3321,
+      "sha256": "9245a36c89683cda9dd8ccb55be73448c3f0f4f6f3808aa63a447fbac62c5476"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_cross_ablation/summary.md",
+      "bytes": 668,
+      "sha256": "83f15d407bf4c38a5cc38fb10afdc2546772acfec393504a04fab9f0fb510492"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/cold_start.json",
+      "bytes": 8236,
+      "sha256": "3b7837c8ba5a61874438d8e822c3203c32fb49fda813839ad78fa0795d0ebefe"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/cold_start_summary.csv",
+      "bytes": 705,
+      "sha256": "f32c66de870cfcff6ad5a773097ce62ede1c48cf299d6612fbc8aa9426983156"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/large__anet__s2026.json",
+      "bytes": 601,
+      "sha256": "989fd71433b357418ecde79a82374a7845f76226f2c07f66201652dc6a8e0a6b"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/large__cross__s2026.json",
+      "bytes": 604,
+      "sha256": "c9b317e4ffcd2dbd7c16a22876610f8dcad7582aac9ecaf1975b6b6960ac39bc"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/large__independent__s2026.json",
+      "bytes": 618,
+      "sha256": "50354ffd73ca3980dc720b7c4a6afaf75ff739049abfb8886cf06d2257aa16d9"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/large__shared__s2026.json",
+      "bytes": 603,
+      "sha256": "c532ff74482e75e3aa8e1370b399d7bb3c5b88eed96b095759ef5cfdc2fc6048"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/medium__anet__s2026.json",
+      "bytes": 604,
+      "sha256": "21a13a3b3f6548d1f125996d877be8a0ff288a0ce5e77df9ec71b4fea90a0281"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/medium__cross__s2026.json",
+      "bytes": 603,
+      "sha256": "7dde5874ea95794cb4cb84fe3fe55b27a98525e805733dc4c52680fffbf11e4d"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/medium__independent__s2026.json",
+      "bytes": 618,
+      "sha256": "e7a797b434c9eca16cc0dd3be932327ce6069a12bcb54da78390e5a59a170e37"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/medium__shared__s2026.json",
+      "bytes": 609,
+      "sha256": "8f2edaefdb03fcdbbdb8885951219a427a05316557f98b429d81c6980225795f"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/small__anet__s2026.json",
+      "bytes": 602,
+      "sha256": "c5d0722e8dec75e1e5c2b7a090be01a1fb3d871d29380e09a9dd3796a2804752"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/small__cross__s2026.json",
+      "bytes": 605,
+      "sha256": "ee85a85bad5c4cbace06c1154fcd48cb9070ea65b45b70e7a752713e51e56d24"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/small__independent__s2026.json",
+      "bytes": 616,
+      "sha256": "419af1ed280e354f66516bffc532f38ee1c759243339b2eb8490e6dd9ee58b72"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/cold_start/small__shared__s2026.json",
+      "bytes": 607,
+      "sha256": "c9b196e7ba2b45909879503e85d743a0af3616e6c1fcf2e01958a2a3f96c8b76"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/config.json",
+      "bytes": 512,
+      "sha256": "52fa0c7bd8bf34643400aaa31c33ea218283dbf09be2f1c8af850ba243141eca"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/environment.json",
+      "bytes": 818,
+      "sha256": "f0e69c3adbb5b0db4650c155fe6a5bc6c217f062ec3bbf688edd72f1d989a7c6"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/figures/accuracy_vs_active_macs.png",
+      "bytes": 93936,
+      "sha256": "9101d51150ca006b3b08bf4686e225ce527e42fc2550461d74b74a83b3cf417a"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/figures/accuracy_vs_total_params.png",
+      "bytes": 92604,
+      "sha256": "3f6f0603b35ad51cd2f87823bd387e1de304011818bbd85ca53f71f93c19116e"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/figures/throughput_vs_active_macs.png",
+      "bytes": 138895,
+      "sha256": "2900a9539843c6ed114600850d63201ca3cfeaf7f82b73a7abe83c7205c911ec"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/figures/train_memory_vs_params.png",
+      "bytes": 99871,
+      "sha256": "5020ed0e751a6e7b7ea79391258756c43f3046d974ec51ae1442b321c1d230c4"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/raw_runs.jsonl",
+      "bytes": 129022,
+      "sha256": "cb3a69201882b5291b635b9c4feaff43b8d095848f8bc5c97f71d774353b6506"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/summary.csv",
+      "bytes": 4798,
+      "sha256": "3f4be58cea3d6c37d9d7c71c499b210d016fc692c6906c8e8df51a04524b8425"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/summary.json",
+      "bytes": 12886,
+      "sha256": "287862d487e8886ad252b480afb5af19d298a398cfd63fda1f59b1a70aff0910"
+    },
+    {
+      "path": "experiments/scaling/results/scaling_v1/summary.md",
+      "bytes": 1874,
+      "sha256": "5a0a54599075efdc3545d762bbdcea2808ebf48588cab2d56cc65aaf4212cfdb"
+    },
+    {
+      "path": "experiments/scaling/run_scaling.py",
+      "bytes": 23877,
+      "sha256": "0c609872e374fbc320de8dc79cb29b79cb7f16139d620c8f0568bc35f65d9d83"
+    },
+    {
+      "path": "experiments/scaling/scales.py",
+      "bytes": 1521,
+      "sha256": "ac8c69fd6659b83f4ec282ed3909f04bd120360f74b796d425497b220a59f5cf"
+    },
+    {
+      "path": "experiments/scaling/tasks.py",
+      "bytes": 4431,
+      "sha256": "b08e004ab15283d88cb16f065198934e44ad34ffcc7b158e828c1ac74b325d03"
+    },
+    {
+      "path": "multitask_anet_demo.py",
+      "bytes": 16483,
+      "sha256": "e75d72475274e1608d1d9d96e63e781903511afd6bcdb9ab69bc5bbd2ce6f510"
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 249,
+      "sha256": "e06c40a98457dbdf607a33ab285817f7595c9d1f0959967061db314b94fd8e03"
+    },
+    {
+      "path": "tests/test_cross_layer.py",
+      "bytes": 3501,
+      "sha256": "611352abc3427dca1264d36c800a8c6e81c072d0ebef4d696829d1821b5912bf"
+    },
+    {
+      "path": "tests/test_scaling_models.py",
+      "bytes": 3299,
+      "sha256": "279136ce5bf421eec581b9afafb7cc927f2a9f21d0df760fbe00d94cd969b056"
+    },
+    {
+      "path": "tests/test_scaling_tasks.py",
+      "bytes": 2594,
+      "sha256": "4cb09c06170f3382372d94935f14822bddd2ae98d106c3782eb80c848f5e8e26"
+    }
+  ],
+  "external_artifacts": {
+    "A-Net-scaling-and-crosslayer.patch": {
+      "bytes": 1077435,
+      "sha256": "f7a5af480a7edb57e492e8f9932acb575768b3394a7d81fbe218ca39f13eebc9"
+    },
+    "A-Net-scaling-and-crosslayer.bundle": {
+      "bytes": 1666551,
+      "sha256": "34efa4d197350e6a69eaa131d1fd630050f6e2a250abe4f13df3ea7fa8a9f30f"
+    },
+    "A-Net-Architecture-scaling.zip": {
+      "bytes": 1671685,
+      "sha256": "2325bceb24c12c9ae74577c057c8299eb8390a6cb42829e128b0e76f553cab16"
+    }
+  }
+}

@@ -1,233 +1,365 @@
-# > ⚠️ \*\*项目声明 (Project Disclaimer)\*\*
-
-# > 
-
-# > 这是一个探索性的小型实验验证项目，仅用于测试多任务学习下硬路由（Top-1 Hard Routing）架构的潜力，\*\*并非完整大模型的结论\*\*。
-
-# > 本人是学生，纯属业余时间的学术探索与自嗨。开源仅供交流与学习，实验受限于算力（RTX 5060 Laptop）及模型规模，不代表工业级落地的最终结果。欢迎各位前辈大佬指正与讨论，\*\*求轻喷\*\*。
-
-# 
-
-# \---
-
 # A-Net
 
-**基于动态子网提取与 Top-1 硬路由的多任务学习架构**
+**Workflow-owned parameter sharing with explicit call graphs, result reuse, and workflow isolation**
 
-[!\[PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch\&logoColor=white)](https://pytorch.org/)
-[!\[CUDA](https://img.shields.io/badge/CUDA-13.0-76B900?logo=nvidia\&logoColor=white)](https://developer.nvidia.com/cuda-toolkit)
-[!\[Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python\&logoColor=white)](https://www.python.org/)
-\[!\[Status](https://img.shields.io/badge/status-research%20prototype-6B7280)]()
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![CUDA](https://img.shields.io/badge/CUDA-13.0-76B900?logo=nvidia&logoColor=white)](https://developer.nvidia.com/cuda-toolkit)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Status](https://img.shields.io/badge/status-research%20prototype-6B7280)]()
 
-> 用一个共享浅层接口提取通用特征，再根据 Task ID 只激活对应的一个专家。  
-> 不遍历全部专家，不做 all-experts 拼接，不产生无效的稠密计算。
+> 这是一个研究原型，不是已证明的大模型结论。当前最强证据来自 50M char-level pilot 和 2D 合成任务；1B/2B 语言能力尚未验证。
 
-\---
+## 当前结论
 
-## 1\. 简介
+2026 年新增的 50M 三架构语言 pilot 得到一个重要的修正结果：
 
-A-Net 是一种面向多任务学习的**动态子网提取架构**。它将模型显式拆分为三个部分：
+| 模型 | 唯一参数 | 单次激活参数 | 有效深度 | 平均 bits-per-byte |
+|---|---:|---:|---:|---:|
+| **A-Net Shared-Depth** | 50.18M | 37.50M | 12 | **1.933 ± 0.067** |
+| Transformer-12L | 37.50M | 37.50M | 12 | 1.991 ± 0.033 |
+| Shared Backbone | 50.18M | 50.18M | 16 | 1.975 ± 0.028 |
+| Transformer-16L | 49.92M | 49.92M | 16 | 2.007 ± 0.055 |
+| Sparse A-Net（旧实现） | 50.18M | 37.50M | **6** | 2.141 ± 0.107 |
 
-1. **共享 L1 接口**：所有任务共享的浅层特征提取器；
-2. **任务专家（Experts）**：每个任务拥有一组独立的非线性专家参数；
-3. **Top-1 硬路由器**：根据输入的 Task ID，只选择并执行一个专家。
+- 在**同深度、同激活参数、同 FLOPs** 下，Shared-Depth A-Net 比 Transformer-12L 低 **0.058 bpc**，Welch p ≈ **0.046**（3 seeds）。
+- 这是一个 **pilot 级** 正结果：接近 0.05、只有 3 seeds、3M tokens，不能当作最终显著性。
+- 之前的 Sparse A-Net 更差，主要原因是它把有效路径从 12 层降到了 **6 层**；这不是“共享一定伤害能力”的证据。
+- 对照 C 中 A-Net 唯一参数 50.18M，仍比 Transformer-12L 多 12.7M（另一个未激活 workflow tail）；它的收益是**相对于多个独立 workflow 的并集，共享块减少了重复存储**，同时在保持 12 层路径时把单次激活参数维持在 37.5M。它不是“比同深度 Transformer 更少唯一参数”，也不是无条件的精度或延迟胜利。
 
-核心前向过程可以概括为：
+## A-Net 是什么
 
-\~\~\~text
-x ──► Shared L1 ──┬──► Expert 0
-                   ├──► Expert 1   ◄── Task ID k 只选择 1 个专家
-                   └──► Expert 2
-\~\~\~
+当前 v2 定义：
 
-\~\~\~python
-def forward(self, x, task\_id):
-    shared\_features = self.l1(x)
-    selected\_expert = self.experts\[task\_id]  # Top-1 硬路由
-    return selected\_expert(shared\_features)
-\~\~\~
+1. 前部 L1 负责输入/任务分配；
+2. 独立 workflow 拥有自己的参数层；
+3. 其他 workflow 可调用某个 workflow 的参数块，但只有 owner 拥有它；
+4. 相同 block/input/config 的结果可复用；
+5. 末端 L1 只整合最终 workflow 输出；
+6. v1 使用固定、显式的调用图，不做自动发现。
 
-未选中的专家**不参与前向计算，也不会收到当前 batch 的梯度**。因此，A-Net 在保留任务专属非线性容量的同时，避免了“所有专家都算一遍”的浪费。
+~~~text
+x -> PreL1 -> workflow w0 --\
+          \-> workflow w1 ----> TerminalL1 -> logits
+          \-> workflow w2 --/
+                |
+          shared parameter block
+          (owned by w0, granted to others)
+~~~
 
-> 当前实现假设 Task ID 在训练和推理时已知，路由是确定性的 Task-ID 索引；它不是学习得到的 soft gating，也不包含负载均衡器。
+这与仓库早期的“Shared L1 + task-specific experts + Top-1 routing”不是同一个模型。旧实现和历史结果仍保留，但不能直接当作 v2 的证据。
 
-\---
+## 1. 50M 语言 pilot（最新）
 
-## 2\. 核心痛点
+### 目的
 
-传统多任务模型通常面临两个问题：
+在单张 RTX 5060 Laptop（8 GB）上，用 50M 唯一参数做一个可执行的三架构语言代理实验，检查：
 
-### 2.1 稠密计算带来的算力浪费
+- 参数共享是否损害能力；
+- 结果缓存是否有实际收益；
+- A-Net 与 Transformer 的差异是否只是激活参数/深度造成的。
 
-大模型或 MoE 类架构如果对每个输入都执行全部专家，参数量上去了，但单样本有效计算量也同步膨胀。很多任务实际上不需要经过所有子网络。
+### 设置
 
-A-Net 的做法是：**参数可以保存多个专家，但每个样本只执行一个专家**。这把“总参数”和“单样本激活参数”拆成两个独立指标，让模型可以为了容量而扩展存储，同时保持稀疏的计算路径。
+- 数据：Tiny Shakespeare（GitHub）、CPython 源码（GitHub）、本地生成四则运算/括号表达式
+- tokenizer：byte-level，vocab=256
+- 训练：3 seeds，每 seed 1500 步，batch 16，seq 128，约 3M tokens
+- 优化器：AdamW，FP32，单卡
+- 指标：held-out bits-per-byte（越低越好）
 
-### 2.2 共享主干的特征干扰与灾难性遗忘
+### 结果
 
-“共享主干 + 任务专属线性头”在简单任务上很有效，但主干必须同时满足所有任务的特征需求。任务差异变大时，会出现：
+3 seeds mean ± 95% CI：
 
-* 任务间特征干扰，某任务的梯度破坏另一任务所需的表示；
-* 线性任务头容量不足，无法拟合复杂的非线性决策边界；
-* 某个随机种子下性能明显塌陷，方差变大。
+| 模型 | text | code | math | 平均 |
+|---|---:|---:|---:|---:|
+| **A-Net Shared-Depth** | **2.537** | **1.736** | 1.527 | **1.933 ± 0.067** |
+| Transformer-12L | 2.635 | 1.815 | **1.523** | 1.991 ± 0.033 |
+| Transformer-16L | 2.638 | 1.815 | 1.568 | 2.007 ± 0.055 |
+| Shared Backbone | 2.608 | 1.775 | 1.542 | 1.975 ± 0.028 |
+| Sparse A-Net | 2.727 | 2.017 | 1.677 | 2.141 ± 0.107 |
 
-A-Net 通过**共享浅层 + 任务专属非线性专家**解决这一矛盾：底层保留通用表示，深层由各任务独立拥有，避免任务之间直接争夺同一组深层特征。
+### 对照 C：Shared-Depth A-Net
 
-\---
+为了消除“只激活 2/3 workflow、有效深度只有 6 层”的混淆：
 
-## 3\. 实验结果
+~~~text
+embedding -> 8 shared blocks -> 4 task-workflow blocks -> task head
+~~~
 
-### 3.1 复杂任务设置
+| 项目 | A-Net Shared-Depth | Transformer-12L |
+|---|---:|---:|
+| 唯一参数 | 50,177,024 | 37,503,168 |
+| 单次激活参数 | 37,501,632 | 37,503,168 |
+| 激活参数差 | 1,536（0.0041%） | — |
+| 顺序深度 | 12 | 12 |
+| 共享比例 | 49.5% | 0% |
+| 参数引用总量 | 75,002,496 | 37,503,168 |
+| FP32 唯一存储 | 200.7 MB | 150.0 MB |
 
-为了避免简单任务“全部接近 100%”导致的饱和，实验使用了 3 个更难的非线性二分类任务：
+- A-Net 平均低 0.058 bpc；text -0.098、code -0.079、math +0.004。
+- Welch t ≈ -3.35，p ≈ 0.046。
+- A-Net batch1 P50 3.00 ms，Transformer-12L 4.70 ms；batch16 14.89 vs 15.23 ms。
+- A-Net 峰值显存 1.59 GB，Transformer-12L 1.51 GB。
 
-|任务|决策边界|
-|-|-|
-|高频正弦|x2 > 0.55·sin(3x1) + 0.28·sin(7.5x1)|
-|四同心环|4 个等量环带，标签按 0/1/0/1 交替|
-|旋转棋盘|25° 旋转后的 1.1 宽网格奇偶分类|
+详细报告：[SHARED_DEPTH_REPORT.md](experiments/anet_v2/lang50m/SHARED_DEPTH_REPORT.md)  
+三架构报告：[REPORT.md](experiments/anet_v2/lang50m/REPORT.md)  
+激活匹配对照：[ACTIVE_MATCH_REPORT.md](experiments/anet_v2/lang50m/ACTIVE_MATCH_REPORT.md)
 
-* 每个任务：**5,000 训练 / 1,500 测试**
-* 标签噪声：**2%**
-* 随机种子：**2026 / 2027 / 2028**
-* 训练：Adam，lr=1e-3，80 epochs，batch=256
-* 网络宽度：hidden=128；A-Net 专家为 128-64-2
-* 运行设备：CPU 8 线程 / NVIDIA RTX 5060 Laptop GPU（CUDA 13.0）
-* CPU 与 GPU 使用完全相同的配置
+## 2. Stage 4：共享、复用、宽度、workflow 数
 
-### 3.2 重点结果
+540 个训练 run，0 失败；3 seeds；2×2 因子（share × cache）。
 
-|方案|总参数|激活参数|复杂任务平均准确率（CPU）|跨种子 std|
-|-|-:|-:|-:|-:|
-|独立基线|51,462|51,462|96.23%|0.19|
-|共享主干 + 线性头|17,670|17,670|94.49%|1.25|
-|**A-Net（Top-1 硬路由）**|**25,542**|**8,770**|**95.84%**|**0.14**|
+| 配置 | 唯一参数比（相对 Basic） | 精度效应 |
+|---|---:|---:|
+| A-Net Share，W=2 | 0.76 | W=2 容量不足，+0.3–1.1 pp |
+| A-Net Share，W=3 | 0.67 | 约中性（-0.16–+0.15 pp） |
+| A-Net Share，W=4 | 0.63 | 约中性（-0.10–+0.13 pp） |
 
-> \*\*A-Net 仅激活独立基线 17.0% 的参数（8,770 / 51,462），达到 95.84% 的准确率，跨种子标准差仅 0.14。\*\*
+- **Reuse 的精度效应严格为 0**：训练每 step 清空 cache，cache 只影响推理。
+- **交互项为 0**：共享和复用没有额外精度协同。
+- W=2 对 3 个任务容量不足（平均 83.9% vs W=3 95.8%、W=4 95.9%）。
+- W=4 相对 W=3 没有稳定精度收益，但唯一参数继续增加。
 
-关键对比：
+详细报告：[STAGE4_REPORT.md](experiments/anet_v2/STAGE4_REPORT.md)
 
-* **对比独立基线**：A-Net 准确率仅低 **0.39 个百分点**，但总参数只有其 **49.6%**，单样本激活参数只有 **17.0%**。
-* **对比共享主干**：A-Net 准确率高 **1.35 个百分点**，标准差从 **1.25 降到 0.14**。共享主干在某个种子的“四同心环”任务上跌到 **91.2%**，而 A-Net 保持稳定。
-* **CPU vs GPU**：A-Net 的 CPU/GPU 平均准确率分别为 **95.84% / 95.79%**，差异仅 **0.05 个百分点**。
+## 3. Stage 2：共享的收益与隔离
 
-!\[复杂任务准确率对比](assets/complex\_accuracy.png)
+315 个耦合 run + 315 个隔离 run。
 
-*图：简单任务与复杂任务平均准确率对比。误差线为 3 个随机种子的标准差。*
+隔离版（detach_both）相对 Independent：
 
-### 3.3 如何解读
+- pair Share 平均 **-0.07 pp**；
+- task0 低约 0.22–0.29 pp；
+- 回归 MSE +0.0020–0.0022；
+- 唯一参数 **0.656×**；
+- 激活参数 **1.479×**。
 
-在简单任务上，三种结构都能达到约 99.4%–99.5%，差异不足以区分架构。  
-但当任务变复杂后：
+隔离版相对耦合版：
 
-* 共享主干的线性任务头开始成为瓶颈；
-* 独立基线仍然最准，但保存了三套完整网络；
-* A-Net 用共享 L1 保留通用特征，用独立专家吸收任务差异，在**准确率、总参数、激活计算和稳定性**之间取得了更好的平衡。
+- pair Share **+1.13 pp**；
+- dense Share **+1.68 pp**；
+- adapter **+1.49 / +1.75 pp**。
 
-\---
+代价：detach_both 会冻结共享块，共享块不再接收梯度。若要共享块继续学习，应改用 detach_aux 或梯度手术。
 
-## 4\. 快速开始
+详细报告：[STAGE2_ISOLATED_REPORT.md](experiments/anet_v2/STAGE2_ISOLATED_REPORT.md)
 
-### 4.1 安装
+## 4. Stage 3：结果缓存
 
-\~\~\~bash
-pip install torch numpy
-\~\~\~
+288 个 cache stream，0 失败。
 
-如果你的机器支持 CUDA，可使用与 RTX 5060 / Blackwell 匹配的 CUDA 13.0 轮子：
+正确性：
 
-\~\~\~bash
+- cache on/off 输出最大绝对差 **0.0**；
+- 参数更新后失效 **100%**；
+- H2D **0**；
+- 所有输入在 cuda:0。
+
+性能：
+
+| 场景 | 结果 |
+|---|---|
+| batch=1，0–75% 重复 | cache 均更慢，1.14–1.85× |
+| 2048 宽，batch=256，75% 重复 | Reuse **0.68×**，Full **0.67×** |
+| 2048 宽，batch=256，50% 重复 | Full **0.98×**，接近盈亏平衡 |
+| 缓存内存 | 最高 256 MB，最多 786 次 eviction |
+| 查找成本 | 约 1.33 µs/次 |
+
+结论：缓存不是普遍加速；只有大宽度、大 batch、高重复率才有净收益。默认关闭。
+
+详细报告：[STAGE3_REPORT.md](experiments/anet_v2/STAGE3_REPORT.md)
+
+## 5. Stage 1：基础架构 scaling
+
+360 个 run，0 失败；3 seeds；h64/h256/h1024/h2048。
+
+相对 Independent：
+
+| 模型 | 平均精度 | 唯一参数比 | 激活参数比 | batch1 P50 | 大 batch 吞吐 |
+|---|---:|---:|---:|---:|---:|
+| A-Net Basic | -0.067 pp | 0.967 | 0.996 | 2.65× | 0.61× |
+| A-Net Full | -0.216 pp | 0.651 | 0.996 | 4.75× | 0.47× |
+| Shared Backbone | -1.367 pp | 0.341 | 1.000 | 相近 | 相近 |
+
+- A-Net 在精度上接近 Independent，但**不是计算/延迟胜利**。
+- Shared Backbone 存储最少，但精度损失最大。
+- A-Net 处在“比 Independent 省存储、比 Shared 保精度”的中间位置。
+
+详细报告：[STAGE1_REPORT.md](experiments/anet_v2/STAGE1_REPORT.md)
+
+## 6. 规模边界：2B 不可在本机执行
+
+本机实测：
+
+- GPU：RTX 5060 Laptop，7.93 GB 专用显存
+- RAM：15.18 GB total / 3.66 GB available
+- 2B 全参数训练仅权重/梯度/Adam 就约 **32 GB**，不含激活
+- 2B FP16 推理约 4 GB，但没有训练好的 2B A-Net/语言栈
+
+推荐：
+
+- **最终能力验证：1B 唯一参数 + 20B–100B tokens + 3 seeds + 8×H100 级**
+- **本机可执行：50M pilot**
+- 50M 不是 MMLU/GSM8K/HumanEval 能力结论
+
+可行性报告：[FEASIBILITY.md](experiments/anet_v2/scale2b/FEASIBILITY.md)  
+规模建议：[RECOMMENDATION.md](experiments/anet_v2/scale2b/RECOMMENDATION.md)
+
+## 7. 当前支持的结论
+
+支持：
+
+1. 参数唯一性、所有权、引用、版本、缓存失效机制可正确实现。
+2. 参数共享能降低唯一参数：W=3 约 0.67×，W=4 约 0.63×。
+3. 在 50M pilot 中，**Shared-Depth A-Net 在同深度/同激活参数下略优于 Transformer-12L**（p≈0.046，pilot 级）。
+4. 隔离（detach_both）显著改善多任务负迁移，代价是冻结共享块。
+5. 缓存正确，且在高重复/大 batch/大宽度下能降低执行次数和延迟。
+
+不支持：
+
+1. “A-Net 无条件优于 Transformer”；
+2. “A-Net 计算更少/延迟更低”；
+3. “2B/1B 语言能力已超过 Transformer”；
+4. “结果复用显著提升训练能力”；
+5. “Sparse A-Net 的失败证明共享机制无效”。
+
+## 8. Quick start
+
+### Install
+
+~~~bash
+pip install -r requirements.txt
+~~~
+
+测试过的 CUDA 13.0 构建：
+
+~~~bash
 pip install torch==2.14.1+cu130 --index-url https://download.pytorch.org/whl/cu130
-pip install numpy
-\~\~\~
+pip install numpy matplotlib pytest
+~~~
 
-### 4.2 运行复杂任务实验
+### Tests
 
-\~\~\~bash
-# 默认 auto：检测到 CUDA 时使用 GPU，否则使用 CPU
-python complex\_tasks\_test.py
+~~~bash
+python -m pytest -q -p no:cacheprovider tests
+~~~
 
-# 显式指定设备
-python complex\_tasks\_test.py --device cpu
-python complex\_tasks\_test.py --device cuda
-\~\~\~
+当前：**75 passed**。
 
-脚本会自动运行 3 个复杂任务 × 3 个随机种子 × 3 种架构，并输出：
+### Stage 1
 
-* 每个任务的测试准确率（mean ± std）
-* 总参数量与单样本激活参数量
-* CPU / GPU 结果
-* 平均训练耗时
+~~~bash
+python -m experiments.anet_v2.runners.run_stage1 \
+  --out-dir experiments/anet_v2/results/stage1 --resume
+~~~
 
-### 4.3 其他脚本
+### Stage 2（隔离默认 detach_both）
 
-\~\~\~bash
-# 简单任务主实验（原始 3 个任务）
-python multitask\_anet\_demo.py --device auto
+~~~bash
+python -m experiments.anet_v2.runners.run_stage2 \
+  --out-dir experiments/anet_v2/results/stage2_isolated_both \
+  --gradient-isolation detach_both --resume
+~~~
 
-# CUDA 兼容性 + GPU 基准
-python cuda\_compat\_test.py
+### Stage 3 缓存
 
-# CPU 推理延迟基准
-python benchmark\_latency.py
-\~\~\~
+~~~bash
+python -m experiments.anet_v2.runners.run_stage3 \
+  --out-dir experiments/anet_v2/results/stage3 --resume
+~~~
 
-### 4.4 项目结构
+### Stage 4 因子实验
 
-\~\~\~text
+~~~bash
+python -m experiments.anet_v2.runners.run_stage4 \
+  --widths 128 512 2048 --workflows 2 3 4 \
+  --models anet_basic anet_share anet_reuse anet_full \
+  --correlations low medium high \
+  --seeds 2026 2027 2028 2029 2030 \
+  --out-dir experiments/anet_v2/results/stage4 --resume
+~~~
+
+### 50M 三架构 pilot
+
+~~~bash
+python -m experiments.anet_v2.lang50m.run \
+  --steps 1500 --seeds 2026 2027 2028 \
+  --archs transformer shared anet \
+  --out-dir experiments/anet_v2/lang50m/results/run_50m
+~~~
+
+### 50M 激活匹配 / 共享深度对照
+
+~~~bash
+python -m experiments.anet_v2.lang50m.run \
+  --steps 1500 --seeds 2026 2027 2028 \
+  --archs transformer37 \
+  --out-dir experiments/anet_v2/lang50m/results/run_50m_active37
+
+python -m experiments.anet_v2.lang50m.run \
+  --steps 1500 --seeds 2026 2027 2028 \
+  --archs anet_shared_depth \
+  --out-dir experiments/anet_v2/lang50m/results/run_50m_shared_depth
+~~~
+
+### 2B 可行性检查
+
+~~~bash
+python experiments/anet_v2/scale2b/feasibility.py
+~~~
+
+## 9. Repository layout
+
+~~~text
 .
-├── multitask\_anet\_demo.py    # 基础模型定义与简单任务实验
-├── complex\_tasks\_test.py     # 复杂任务、3 seeds、CPU/GPU 对比
-├── cuda\_compat\_test.py       # CUDA 兼容性与 GPU 性能测试
-├── benchmark\_latency.py      # CPU 延迟基准
-├── assets/
-│   └── complex\_accuracy.png
-└── README.md
-\~\~\~
+├── README.md
+├── multitask_anet_demo.py              # legacy demo, not v2
+├── experiments/
+│   ├── scaling/                        # legacy 2D scaling study + historical artifacts
+│   └── anet_v2/
+│       ├── core/                       # blocks, registry, workflows, cache, accounting
+│       ├── runners/                    # Stage 1–4 runners
+│       ├── analysis/                   # aggregation / figures
+│       ├── results/                    # Stage 1–4 results
+│       ├── STAGE1_REPORT.md
+│       ├── STAGE2_REPORT.md
+│       ├── STAGE2_ISOLATED_REPORT.md
+│       ├── STAGE3_REPORT.md
+│       ├── STAGE4_REPORT.md
+│       ├── lang50m/                    # 50M Transformer/Shared/A-Net pilot
+│       │   ├── model.py
+│       │   ├── run.py
+│       │   ├── REPORT.md
+│       │   ├── ACTIVE_MATCH_REPORT.md
+│       │   ├── SHARED_DEPTH_REPORT.md
+│       │   └── results/
+│       └── scale2b/                    # 2B feasibility, not a 2B run
+└── tests/
+~~~
 
-\---
+## 10. 历史修正
 
-## 5\. 声明
+早期 README 声称 A-Net 激活 Independent 的 17%（8,770 / 51,462）。这是一个特定配置下的真实数字，但混用了 expert width 和 comparison denominator，不能推广。
 
-### 5.1 CUDA 兼容性
+在受控实验中：
 
-A-Net 的实现已在本机 **NVIDIA GeForce RTX 5060 Laptop GPU** 上完成实际验证：
+- Stage 1 A-Net Basic 激活参数约 **0.996×** Independent；
+- 唯一参数约 **0.967×**；
+- A-Net Full 唯一参数约 **0.651×**；
+- 早期 A-Net 约 50% 参数的说法只适用于旧共享 L1 + experts 实现。
 
-* PyTorch **2.14.1+cu130**
-* Compute Capability **12.0（sm\_120）**
-* CUDA 13.0 / cuDNN 9.24.0
-* FP16、BF16、FP16 autocast、cuDNN 卷积均通过
-* A-Net 路由在 GPU 上严格只更新被选中的专家
-* 无 CUDA DLL 缺失、驱动不匹配或 OOM
+历史 PDF 和旧结果保留，不覆盖。
 
-### 5.2 CPU / GPU 精度
+## 11. 局限
 
-> \*\*声明\*\*：A-Net 极度兼容 CUDA。简单任务 50-epoch 主实验的 CPU/GPU 指标完全一致；复杂任务 CPU/GPU 平均准确率差异不超过 \*\*0.05 个百分点\*\*，属于浮点运算的非确定性，不构成精度回退。
+- 50M 语言 pilot 只有 3 seeds、3M tokens、char-level 三域数据；不是语言能力 benchmark。
+- Stage 1–4 是 2D 合成任务；不能直接外推到真实语言/视觉任务。
+- 1B/2B 未执行；2B 在本机不可行。
+- 缓存收益依赖 batch、宽度、重复率；不是普遍加速。
+- detach_both 冻结共享块；共享块可训练性需要单独实验。
+- 单 GPU、单 PyTorch/CUDA 栈。
+- A-Net Shared-Depth 的正结果仍是 pilot 级，p≈0.046，需要更多 seeds 和更大 token 预算复现。
 
-已验证的复杂任务结果：
+## License
 
-|指标|CPU|GPU|
-|-|-:|-:|
-|独立基线平均准确率|96.23%|96.20%|
-|共享主干平均准确率|94.49%|94.53%|
-|A-Net 平均准确率|**95.84%**|**95.79%**|
-
-### 5.3 性能提示
-
-CUDA 兼容并不等于“任何情况下都更快”。本项目的模型很小，实测表明：
-
-* batch=1 的 GPU 延迟反而高于 CPU（kernel launch / WDDM 开销占主导）；
-* batch=4096 时 GPU 吞吐可达到约 **37M–41M samples/s**；
-* 对于当前规模的网络，GPU 更适合大 batch 吞吐或更大模型，而不是单样本在线推理。
-
-### 5.4 结果口径
-
-* 所有准确率均为测试集 Top-1 准确率；
-* 复杂任务结果为 3 个随机种子的 mean ± std；
-* “激活参数”指单次 forward 中实际参与计算的参数，不包含未选中的专家；
-* 延迟基准仅用于结构对比，不含真实服务中的网络、序列化和预处理开销。
-
-\---
-
-**A-Net：让多任务模型只计算它真正需要的那一部分。**
-
+See [LICENSE](LICENSE). Historical reports and PDFs are retained for provenance.
