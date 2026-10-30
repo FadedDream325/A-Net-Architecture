@@ -142,6 +142,9 @@ def main() -> int:
             torch.manual_seed(seed)
             if arch == "transformer":
                 model = TransformerLM()
+            elif arch == "transformer37":
+                # 12 layers: unique/active ~37.50M, matching A-Net's active count.
+                model = TransformerLM(layers=12)
             elif arch == "shared":
                 model = SharedBackboneLM()
             elif arch == "anet":
