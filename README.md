@@ -442,4 +442,8 @@ python experiments/anet_v2/scale2b/feasibility.py
 
 ## License
 
-See [LICENSE](LICENSE). Historical reports and PDFs are retained for provenance.
+See [LICENSE](LICENSE).
+
+当前实验总结 PDF：[A-Net_Experiment_Summary.pdf](A-Net_Experiment_Summary.pdf)  
+历史报告 PDF：[archive/A-Net_Experiment_Report_V3_historical.pdf](archive/A-Net_Experiment_Report_V3_historical.pdf)  
+Word 版本：[A-Net_Experiment_Summary.docx](A-Net_Experiment_Summary.docx)
