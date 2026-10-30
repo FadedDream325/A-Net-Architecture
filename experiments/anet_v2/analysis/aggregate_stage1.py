@@ -109,6 +109,12 @@ def aggregate(records):
             "train_peak_gpu_gb": mean_std([x / 1024**3 for x in peak_gpu])[0],
             "train_peak_rss_gb": mean_std([x / 1024**3 for x in peak_rss])[0],
         }
+        h2d = [r.get("inference", {}).get("host_to_device_bytes", 0) for r in recs if r.get("inference")]
+        row["host_to_device_bytes_max"] = max(h2d) if h2d else None
+        row["input_device"] = next(
+            (r["inference"]["batches"]["single"]["1"].get("input_device") for r in recs if r.get("inference") and "single" in r["inference"].get("batches", {}) and "1" in r["inference"]["batches"]["single"]),
+            None,
+        )
         # inference per mode/batch
         for mode in ("single", "pair", "mixed"):
             p50s, p95s, tputs, hits = [], [], [], []
