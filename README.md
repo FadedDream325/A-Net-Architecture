@@ -49,6 +49,32 @@ x -> PreL1 -> workflow w0 --\
 
 这与仓库早期的“Shared L1 + task-specific experts + Top-1 routing”不是同一个模型。旧实现和历史结果仍保留，但不能直接当作 v2 的证据。
 
+## 设计澄清：一个任务一个专业 workflow
+
+A-Net 的基本组织方式是：
+
+> **一个任务对应一个专业 workflow；workflow 建立在共享基础层 L1 上，用该任务的专业数据训练；一个专业 workflow 可以任意长。**
+
+因此，A-Net 的参数不是“必须切成三个固定小块”，而是按任务组织成可扩展的 workflow。workflow 可以加深、加宽或延长，只要仍保持共享 L1 和 workflow 的所有权/调用关系。
+
+这也意味着一个关键事实：
+
+> **如果把所有参数全部整合进一个 workflow，不再保留跨 workflow 的共享/路由，A-Net 就退化为经典 Transformer。**
+
+所以 A-Net 与 Transformer 的差别不是“层数更多”或“参数更多”，而是：
+
+| 维度 | 经典 Transformer | A-Net |
+|---|---|---|
+| 参数组织 | 一个统一堆栈 | 一个任务一个专业 workflow |
+| 基础层 | 无独立共享 L1 | 共享 L1 |
+| workflow 长度 | 固定整体深度 | 每个 workflow 可任意长 |
+| 跨 workflow 关系 | 无 | 共享参数/调用关系/隔离 |
+| 合并后的极限 | 仍是 Transformer | 全部合并即退化为 Transformer |
+
+这也是为什么能力对比必须控制**有效深度、激活参数和 FLOPs**：如果 A-Net 只是把 12 层拆成两个 6 层 workflow，它当然会输给 12 层 Transformer；这不是共享机制的问题。当前对照 C 的 Shared-Depth A-Net 就是按“共享 L1 + 12 层任务路径”构造的。
+
+50M pilot 为了把预算压在 50M，实际用 2 个 workflow 承载 3 个任务，每个任务仍只路由到一个专业 workflow；这是预算压缩，不改变“一任务一 workflow”的组织原则。完整实现可以让每个任务拥有独立 workflow。
+
 ## 1. 50M 语言 pilot（最新）
 
 ### 目的
