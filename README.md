@@ -25,7 +25,7 @@
 - 这是一个 **pilot 级** 正结果：接近 0.05、只有 3 seeds、3M tokens，不能当作最终显著性。
 - 之前的 Sparse A-Net 更差，主要原因是它把有效路径从 12 层降到了 **6 层**；这不是“共享一定伤害能力”的证据。
 - 对照 C 中 A-Net 唯一参数 50.18M，仍比 Transformer-12L 多 12.7M（另一个未激活 workflow tail）；它的收益是**相对于多个独立 workflow 的并集，共享块减少了重复存储**，同时在保持 12 层路径时把单次激活参数维持在 37.5M。它不是“比同深度 Transformer 更少唯一参数”，也不是无条件的精度或延迟胜利。
-- 成本上：对照 C 的 batch1 P50 为 **3.00 ms vs 4.70 ms**（A-Net 更快），但显存和训练时间没有优势；Stage 1 中 A-Net 推理更慢、训练更慢。详见“成本画像”。
+- 成本上：对照 C 的 batch1 P50 为 **3.00 ms vs 4.70 ms**（A-Net 更快）；训练显存/时间与 Transformer-12L 基本持平（1.59 vs 1.51 GB，100.3 vs 101.7 s）。**Sparse A-Net 的训练峰值确实更低（1.69 vs Transformer-16L 1.98 GB）**，但那是用 6 层有效深度和更差能力换来的。详见“成本画像”。
 
 ## A-Net 是什么
 
@@ -205,8 +205,22 @@ embedding -> 8 shared blocks -> 4 task-workflow blocks -> task head
 | 训练时间/seed | 100.3 s | 101.7 s | 0.99×（无实质差异） |
 
 - **推理**：在这个 pilot 中 A-Net 的 batch1 延迟更低（3.00 vs 4.70 ms），但 batch16 基本持平。两者深度/激活参数相同，因此这不是“FLOPs 更少”，更可能是实现/启动开销差异。
-- **显存**：A-Net 没有优势。唯一参数 50.18M vs 37.50M，峰值 1.59 vs 1.51 GB，均更高。
-- **训练时间**：没有优势。100.3 vs 101.7 s，差异约 1%，不能称为训练加速。
+- **训练显存**：要分版本，不能一概而论。见下表。
+- **训练时间**：Shared-Depth 与 Transformer-12L 基本持平（100.3 vs 101.7 s）；Sparse A-Net 更快（94.6 s），但它有效深度只有 6 层、能力更差。
+
+### 训练显存：Sparse 与 Shared-Depth 不同
+
+| 模型 | 唯一参数 | 单次激活参数 | 训练峰值显存 | 训练时间/seed |
+|---|---:|---:|---:|---:|
+| Sparse A-Net | 50.18M | 37.50M | **1.69 GB** | 94.6 s |
+| Transformer-16L | 49.92M | 49.92M | 1.98 GB | 121.7 s |
+| Shared Backbone | 50.18M | 50.18M | 2.11 GB | 120.8 s |
+| Shared-Depth A-Net | 50.18M | 37.50M | 1.59 GB | 100.3 s |
+| Transformer-12L | 37.50M | 37.50M | **1.51 GB** | 101.7 s |
+
+- **Sparse A-Net 的训练显存确实更低**：1.69 GB vs Transformer-16L 1.98 GB、Shared Backbone 2.11 GB。原因是它只激活 2/3 workflow，激活值更少；但它的有效深度只有 6 层，能力也更差。
+- **Shared-Depth A-Net 没有训练显存优势**：1.59 GB vs Transformer-12L 1.51 GB。两者激活参数/深度相同，但 A-Net 唯一参数多 12.7M（另一个 workflow tail），优化器状态更大。
+- 所以“训练显存更低”是**Sparse A-Net 的代价性优势**，不是 Shared-Depth A-Net 的优势，也不能直接归因于“共享”本身。
 
 ### Stage 1 全矩阵
 
@@ -253,6 +267,7 @@ embedding -> 8 shared blocks -> 4 task-workflow blocks -> task head
 3. 在 50M pilot 中，**Shared-Depth A-Net 在同深度/同激活参数下略优于 Transformer-12L**（p≈0.046，pilot 级）。
 4. 隔离（detach_both）显著改善多任务负迁移，代价是冻结共享块。
 5. 缓存正确，且在高重复/大 batch/大宽度下能降低执行次数和延迟。
+6. Sparse A-Net 的训练峰值显存和训练时间更低（1.69 GB / 94.6 s vs Transformer-16L 1.98 GB / 121.7 s），但这是以只激活 2/3 workflow、有效深度 6 层、能力更差为代价的。
 
 不支持：
 
