@@ -125,6 +125,45 @@ class ANetLM(nn.Module):
         return self.heads[task](self.ln_f(pooled))
 
 
+class SharedDepthANetLM(nn.Module):
+    """Shared-depth control C.
+
+    Each task path has 12 sequential blocks: 8 shared blocks + 4 blocks owned
+    by one of two workflows.  The unique budget is 16 blocks (~50M), while the
+    active path is 12 blocks (~37.5M), matching Transformer-12L in depth and
+    active parameters/FLOPs.
+    """
+
+    def __init__(self, vocab: int = 256, d: int = 512, heads: int = 8, ffn: int = 2000,
+                 shared_blocks: int = 8, workflows: int = 2, own_blocks: int = 4, tasks: int = 3):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, d)
+        self.shared = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(shared_blocks)])
+        self.workflows = nn.ModuleList([
+            nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(own_blocks)])
+            for _ in range(workflows)
+        ])
+        self.ln_f = nn.LayerNorm(d)
+        self.heads = nn.ModuleList([nn.Linear(d, vocab) for _ in range(tasks)])
+        self.workflows_n = workflows
+        self.mask = None
+
+    def _mask(self, T: int, device):
+        if self.mask is None or self.mask.size(0) != T or self.mask.device != device:
+            self.mask = torch.triu(torch.ones(T, T, device=device, dtype=torch.bool), diagonal=1)
+        return self.mask
+
+    def forward(self, x: torch.Tensor, task: int) -> torch.Tensor:
+        h = self.embed(x)
+        m = self._mask(x.size(1), x.device)
+        for block in self.shared:
+            h = block(h, m)
+        w = task % self.workflows_n
+        for block in self.workflows[w]:
+            h = block(h, m)
+        return self.heads[task](self.ln_f(h))
+
+
 def parameter_counts(model: nn.Module) -> dict:
     unique = sum(p.numel() for p in model.parameters() if p.requires_grad)
     shared_params = 0
@@ -141,6 +180,13 @@ def parameter_counts(model: nn.Module) -> dict:
         active += shared_params
         active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
         reference = unique + shared_params  # shared stack referenced by both active workflows
+    elif isinstance(model, SharedDepthANetLM):
+        shared_params = sum(p.numel() for b in model.shared for p in b.parameters())
+        active = sum(p.numel() for p in model.embed.parameters())
+        active += shared_params
+        active += sum(p.numel() for b in model.workflows[0] for p in b.parameters())
+        active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
+        reference = unique + shared_params  # shared stack referenced by both workflows
     elif isinstance(model, SharedBackboneLM):
         reference = unique
     return {

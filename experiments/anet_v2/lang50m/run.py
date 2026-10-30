@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
 from experiments.anet_v2.lang50m.model import (
     ANetLM,
     SharedBackboneLM,
+    SharedDepthANetLM,
     TransformerLM,
     parameter_counts,
 )
@@ -145,6 +146,9 @@ def main() -> int:
             elif arch == "transformer37":
                 # 12 layers: unique/active ~37.50M, matching A-Net's active count.
                 model = TransformerLM(layers=12)
+            elif arch == "anet_shared_depth":
+                # Control C: 8 shared + 4 workflow blocks = 12 sequential layers.
+                model = SharedDepthANetLM()
             elif arch == "shared":
                 model = SharedBackboneLM()
             elif arch == "anet":
