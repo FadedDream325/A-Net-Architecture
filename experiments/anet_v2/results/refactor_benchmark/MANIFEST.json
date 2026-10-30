@@ -1,0 +1,47 @@
+{
+  "git_commit": "70ab69d8243511c07b7857a92b72ad285168e116",
+  "git_branch": "experiment/anet-v2",
+  "code_hash": "f30c2cdc863f71829505f003ea9c4352ca65f41ce2049acb73537a344286966b",
+  "benchmark": "router/cache refactor",
+  "raw": "raw_bench.jsonl",
+  "summary": "summary.csv",
+  "config": {
+    "widths": [
+      64,
+      256,
+      1024,
+      2048
+    ],
+    "seeds": [
+      2026,
+      2027,
+      2028
+    ],
+    "correlation": "low",
+    "models": [
+      "independent",
+      "anet_basic",
+      "anet_full"
+    ],
+    "batch_sizes": [
+      1,
+      1024
+    ],
+    "repeats": 100,
+    "inference_cache": "full tested both False/True",
+    "min_free_vram_gb": 2.0,
+    "max_vram_fraction": 0.8
+  },
+  "device_guard": {
+    "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "total_gb": 7.933,
+    "free_gb": 6.877,
+    "max_fraction": 0.8,
+    "policy": "fail if free < 2.0 GiB; cap allocator at 80% of dedicated total"
+  },
+  "notes": [
+    "All timed inputs were cuda:0 with host_to_device_bytes=0.",
+    "Peak allocated per config < 0.1 GiB; no shared-memory spill.",
+    "Cache=True is request-level cache reuse; cache=False is the pure matrix-multiply path."
+  ]
+}
