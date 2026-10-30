@@ -1,0 +1,17 @@
+{
+  "checkpoint": "experiments\\scaling\\results\\scaling_v1\\checkpoints\\small__shared__s2026.pt",
+  "scale": "small",
+  "model": "shared",
+  "seed": 2026,
+  "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "import_end_s": 1.4482465000000957,
+  "cuda_init_s": 0.06576339999992342,
+  "model_load_s": 0.01078349999988859,
+  "ready_s": 1.5413726000001589,
+  "cold_forward_us": 7268245.4,
+  "warm_b1_p50_us": 100.19199922680855,
+  "warm_b1_p95_us": 183.87199938297272,
+  "throughput_b1024_samples_s": 13453621.792673845,
+  "peak_allocated_bytes": 36982784,
+  "peak_reserved_bytes": 37748736
+}

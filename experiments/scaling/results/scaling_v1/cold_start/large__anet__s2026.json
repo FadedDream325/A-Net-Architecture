@@ -1,0 +1,17 @@
+{
+  "checkpoint": "experiments\\scaling\\results\\scaling_v1\\checkpoints\\large__anet__s2026.pt",
+  "scale": "large",
+  "model": "anet",
+  "seed": 2026,
+  "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "import_end_s": 1.5462468000000626,
+  "cuda_init_s": 0.0626451000000543,
+  "model_load_s": 0.03799520000006851,
+  "ready_s": 1.664481099999989,
+  "cold_forward_us": 8294797.1,
+  "warm_b1_p50_us": 110.00000312924385,
+  "warm_b1_p95_us": 208.38400721549988,
+  "throughput_b1024_samples_s": 1987269.0576070612,
+  "peak_allocated_bytes": 67566080,
+  "peak_reserved_bytes": 77594624
+}
