@@ -122,16 +122,17 @@ class TerminalL1(nn.Module):
     verify that no intermediate state is passed in.
     """
 
-    def __init__(self, num_tasks: int, feature_dim: int, out_dims: list[int]):
+    def __init__(self, num_tasks: int, feature_dim: int, out_dims: list[int], num_workflows: int | None = None):
         super().__init__()
         self.num_tasks = num_tasks
+        self.num_workflows = num_workflows or num_tasks
         self.feature_dim = feature_dim
         self.out_dims = list(out_dims)
         self.heads = nn.ModuleList(
             [nn.Linear(feature_dim, out_dims[t]) for t in range(num_tasks)]
         )
         # Per-task soft weights over workflow slots; masked to active workflows.
-        self.gates = nn.Parameter(torch.zeros(num_tasks, num_tasks))
+        self.gates = nn.Parameter(torch.zeros(num_tasks, self.num_workflows))
 
     def forward(
         self,

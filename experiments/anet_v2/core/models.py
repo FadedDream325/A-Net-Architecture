@@ -109,6 +109,7 @@ class ANetModel(nn.Module):
         hidden_dim: int,
         out_dims: list[int],
         *,
+        num_workflows: int | None = None,
         workflow_out_dim: int | None = None,
         share_mode: str = "none",
         cache_enabled: bool = False,
@@ -127,6 +128,9 @@ class ANetModel(nn.Module):
         if gradient_isolation not in {"none", "detach_aux", "detach_shared", "detach_both"}:
             raise ValueError(f"bad gradient_isolation {gradient_isolation}")
         self.num_tasks = num_tasks
+        self.num_workflows = num_workflows or num_tasks
+        if self.num_workflows < 1:
+            raise ValueError("num_workflows must be >= 1")
         self.in_dim = in_dim
         self.hidden_dim = hidden_dim
         self.out_dims = list(out_dims)
@@ -173,7 +177,7 @@ class ANetModel(nn.Module):
 
         e = self.workflow_out_dim
         shared_id = "w0.cross"
-        for t in range(num_tasks):
+        for t in range(self.num_workflows):
             wf = Workflow(workflow_id=f"w{t}")
             own_id = f"w{t}.own"
             own_op = nn.Sequential(nn.Linear(hidden_dim, e), nn.ReLU())
@@ -219,7 +223,7 @@ class ANetModel(nn.Module):
 
             self.workflow_objs.append(wf)
 
-        self.terminal = TerminalL1(num_tasks, e, out_dims)
+        self.terminal = TerminalL1(num_tasks, e, out_dims, num_workflows=self.num_workflows)
         # Hot-path tables: routing and block references are resolved once.
         self._active_table = tuple(self._make_active(t) for t in range(num_tasks))
         self._prel1_block = self.registry.get(self.prel1_id)
@@ -227,7 +231,7 @@ class ANetModel(nn.Module):
         self._cross_blocks = [self.registry.get(i) for i in self.cross_ids]
         self._adapter_blocks = [self.registry.get(i) if i else None for i in self.adapter_ids]
         self._has_adapters = bool(self.adapter_ids and any(self.adapter_ids))
-        self._caller_names = [f"w{t}" for t in range(num_tasks)]
+        self._caller_names = [f"w{t}" for t in range(self.num_workflows)]
         self.inference_cache = False
         self.graph = self._build_graph()
         self.graph.assert_acyclic()
@@ -269,16 +273,19 @@ class ANetModel(nn.Module):
             )
         graph.add_site(
             CallSite("terminal", "L1_terminal", "terminal", "workflow_outputs"),
-            depends_on=[f"w{t}.output" for t in range(self.num_tasks)],
+            depends_on=[f"w{t}.output" for t in range(self.num_workflows)],
         )
         return graph
 
     def _make_active(self, task_id: int) -> tuple[int, ...]:
+        primary = task_id % self.num_workflows
         if self.active_mode == "sparse":
-            return (task_id,)
+            return (primary,)
         if self.active_mode == "pair":
-            return (task_id, (task_id + 1) % self.num_tasks)
-        return tuple(range(self.num_tasks))
+            if self.num_workflows == 1:
+                return (0,)
+            return (primary, (primary + 1) % self.num_workflows)
+        return tuple(range(self.num_workflows))
 
     def resolve_active(self, task_id: int, active_ids: list[int] | None = None) -> list[int]:
         if not 0 <= task_id < self.num_tasks:
@@ -289,7 +296,7 @@ class ANetModel(nn.Module):
         if not active:
             raise ValueError("active_ids must be non-empty")
         for i in active:
-            if not 0 <= i < self.num_tasks:
+            if not 0 <= i < self.num_workflows:
                 raise ValueError(f"invalid active workflow {i}")
         return active
 
@@ -566,6 +573,7 @@ def build_model(
     in_dim: int,
     hidden_dim: int,
     out_dims: list[int],
+    num_workflows: int | None = None,
     workflow_out_dim: int | None = None,
     active_mode: str = "sparse",
     cache_key_mode: str = "identity",
@@ -578,25 +586,25 @@ def build_model(
     if kind == "anet_basic":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="none",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     if kind == "anet_share":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="block",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     if kind == "anet_reuse":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="none",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     if kind == "anet_full":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="block",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     if kind == "anet_adapter":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="adapter",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     if kind == "anet_full_adapter":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="adapter",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation, num_workflows=num_workflows)
     raise KeyError(f"unknown model {kind}")
