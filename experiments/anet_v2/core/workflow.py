@@ -145,10 +145,15 @@ class TerminalL1(nn.Module):
             raise ValueError("workflow output count != active id count")
         if task_id < 0 or task_id >= self.num_tasks:
             raise ValueError(f"invalid task_id {task_id}")
-        stacked = torch.stack(workflow_outputs, dim=1)  # [B, K, e]
-        logits = self.gates[task_id, active_ids]
-        weights = F.softmax(logits, dim=0).to(stacked.dtype)  # [K]
-        pooled = (stacked * weights.view(1, -1, 1)).sum(dim=1)
+        if len(workflow_outputs) == 1:
+            # Fast path: stacking/softmax/pooling over K=1 only adds kernels.
+            pooled = workflow_outputs[0]
+        else:
+            stacked = torch.stack(workflow_outputs, dim=1)  # [B, K, e]
+            idx = torch.as_tensor(active_ids, device=stacked.device, dtype=torch.long)
+            logits = self.gates[task_id].index_select(0, idx)
+            weights = F.softmax(logits, dim=0).to(stacked.dtype)  # [K]
+            pooled = torch.einsum("k,bke->be", weights, stacked)
         return self.heads[str(task_id)](pooled)
 
     def parameter_count(self) -> int:
