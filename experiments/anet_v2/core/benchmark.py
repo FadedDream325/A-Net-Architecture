@@ -1,4 +1,9 @@
-"""Latency/throughput/memory measurement with raw samples retained."""
+"""Latency/throughput/memory measurement with raw samples retained.
+
+Timed calls run only on tensors that are already resident on the target
+device.  Any one-time host-to-device transfer happens before warmup and is
+reported separately; it is never inside the timed loop.
+"""
 
 from __future__ import annotations
 
@@ -6,7 +11,6 @@ import gc
 import statistics
 import time
 
-import numpy as np
 import torch
 
 from .models import ANetModel
@@ -39,25 +43,33 @@ def summarise(samples_us: list[float]) -> dict:
 
 
 def _run_timed(fn, device: torch.device, repeats: int) -> tuple[list[float], float]:
+    """Return per-call CUDA-event times (or CPU perf_counter) and true wall time.
+
+    Throughput uses wall time, not the sum of event durations: the latter
+    excludes launch gaps and Python overhead and would overstate throughput.
+    """
     if device.type == "cuda":
         starts = [torch.cuda.Event(enable_timing=True) for _ in range(repeats)]
         ends = [torch.cuda.Event(enable_timing=True) for _ in range(repeats)]
+        _sync(device)
+        wall_start = time.perf_counter()
         with torch.inference_mode():
             for i in range(repeats):
                 starts[i].record()
                 fn()
                 ends[i].record()
-        torch.cuda.synchronize(device)
+        _sync(device)
+        wall = time.perf_counter() - wall_start
         samples = [s.elapsed_time(e) * 1000.0 for s, e in zip(starts, ends)]
-        wall = sum(samples) / 1e6
     else:
         samples = []
+        wall_start = time.perf_counter()
         with torch.inference_mode():
             for _ in range(repeats):
                 start = time.perf_counter_ns()
                 fn()
                 samples.append((time.perf_counter_ns() - start) / 1000.0)
-        wall = sum(samples) / 1e6
+        wall = time.perf_counter() - wall_start
     return samples, wall
 
 
@@ -68,6 +80,16 @@ def _rss_bytes() -> int | None:
         return int(psutil.Process().memory_info().rss)
     except Exception:
         return None
+
+
+def _to_device_once(t: torch.Tensor, device: torch.device) -> tuple[torch.Tensor, int]:
+    """Move once, report bytes; called before warmup, never in the timed loop."""
+    same_type = t.device.type == device.type
+    same_index = device.index is None or t.device.index == device.index
+    if same_type and same_index:
+        return t, 0
+    moved = t.to(device)
+    return moved, int(t.numel() * t.element_size())
 
 
 def benchmark_inference(
@@ -83,7 +105,12 @@ def benchmark_inference(
     reset_cache_each_repeat: bool = False,
 ) -> dict:
     model.eval()
-    result = {"batches": {}, "modes": modes, "repeats": repeats, "device": str(device)}
+    model.to(device)
+    param_device = next(model.parameters()).device
+    if device.type == "cuda":
+        assert param_device.type == "cuda", f"model is on {param_device}, not CUDA"
+    result = {"batches": {}, "modes": modes, "repeats": repeats, "device": str(device),
+              "model_device": str(param_device), "host_to_device_bytes": 0}
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
         result["peak_allocated_bytes"] = None
@@ -93,14 +120,18 @@ def benchmark_inference(
         result["batches"][mode] = {}
         for batch_size in batch_sizes:
             if mode == "mixed":
-                x = suite.x_test[:batch_size].repeat(len(suite.specs), 1).to(device)
+                x = suite.x_test[:batch_size].repeat(len(suite.specs), 1)
+                x, moved = _to_device_once(x, device)
+                result["host_to_device_bytes"] += moved
                 task_ids = torch.cat(
                     [torch.full((batch_size,), t, dtype=torch.long, device=device) for t in range(len(suite.specs))]
                 )
                 total_samples = x.size(0)
                 call = lambda: model.forward_mixed(x, task_ids)
             else:
-                x = suite.x_test[:batch_size].to(device)
+                x = suite.x_test[:batch_size]
+                x, moved = _to_device_once(x, device)
+                result["host_to_device_bytes"] += moved
                 total_samples = batch_size
                 if isinstance(model, ANetModel):
                     if mode == "single":
@@ -115,6 +146,8 @@ def benchmark_inference(
                 else:
                     call = lambda: model(x, task_id)
 
+            if device.type == "cuda":
+                assert x.is_cuda, "timed input is not on CUDA"
             with torch.inference_mode():
                 for _ in range(warmup):
                     call()
@@ -135,7 +168,9 @@ def benchmark_inference(
             result["batches"][mode][str(batch_size)] = {
                 **summary,
                 "total_samples": total_samples,
+                "input_device": str(x.device),
                 "throughput_samples_s": total_samples * repeats / max(wall, 1e-12),
+                "wall_seconds": wall,
                 "raw_us": samples,
             }
             if isinstance(model, ANetModel):
@@ -144,6 +179,6 @@ def benchmark_inference(
     if device.type == "cuda":
         result["peak_allocated_bytes"] = int(torch.cuda.max_memory_allocated(device))
         result["peak_reserved_bytes"] = int(torch.cuda.max_memory_reserved(device))
-    result["peak_rss_bytes"] = _rss_bytes()
+    result["rss_bytes_at_end"] = _rss_bytes()
     gc.collect()
     return result
