@@ -90,7 +90,7 @@ def main() -> int:
     p.add_argument("--widths", nargs="+", type=int, default=[128, 512, 2048])
     p.add_argument("--models", nargs="+", default=["independent", "anet_basic", "anet_share", "anet_adapter"])
     p.add_argument("--active-modes", nargs="+", choices=("pair", "dense"), default=["pair", "dense"])
-    p.add_argument("--gradient-isolation", choices=("none", "detach_aux", "detach_shared", "detach_both"), default="none")
+    p.add_argument("--gradient-isolation", choices=("none", "detach_aux", "detach_shared", "detach_both"), default="detach_both")
     p.add_argument("--correlations", nargs="+", default=["low", "medium", "high"], choices=list(CORRELATIONS))
     p.add_argument("--seeds", nargs="+", type=int, default=[2026, 2027, 2028, 2029, 2030])
     p.add_argument("--epochs", type=int, default=30)

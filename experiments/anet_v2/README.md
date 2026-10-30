@@ -112,3 +112,20 @@ Refactor benchmark command:
     python -m experiments.anet_v2.runners.benchmark_router_cache \
       --widths 64 256 1024 2048 --seeds 2026 2027 2028 \
       --out-dir experiments/anet_v2/results/refactor_benchmark
+
+
+## Default gradient isolation (2026-10-30)
+
+Following Stage 2 isolation results, new experiment runners default to
+gradient_isolation=detach_both:
+
+- shared cross-block outputs are detached for every caller (the block is a
+  fixed shared feature, not a trained shared parameter);
+- only the primary task workflow contributes gradients; auxiliary pair/dense
+  workflows are detached;
+- storage sharing and the one-object/one-version identity checks are unchanged.
+
+Use --gradient-isolation none for the coupled baseline, or detach_aux to keep
+the shared block trainable through primary workflows while isolating auxiliary
+workflows.  The coupled Stage 2 results remain in results/stage2/; the isolated
+rerun is in results/stage2_isolated_both/.

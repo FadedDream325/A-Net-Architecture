@@ -208,6 +208,7 @@ def warmup(args, suite, device: torch.device) -> float:
                 out_dims=[s.out_dim for s in suite.specs],
                 active_mode=args.active_mode,
                 cache_key_mode=args.cache_key_mode,
+                gradient_isolation=args.gradient_isolation,
             ).to(device)
             opt = torch.optim.AdamW(model.parameters(), lr=1e-3)
             x = suite.x_train[: min(64, suite.x_train.size(0))]
@@ -259,6 +260,7 @@ def main() -> int:
     p.add_argument("--weight-decay", type=float, default=1e-4)
     p.add_argument("--active-mode", choices=("sparse", "pair", "dense"), default="sparse")
     p.add_argument("--cache-key-mode", choices=("identity", "content"), default="identity")
+    p.add_argument("--gradient-isolation", choices=("none", "detach_aux", "detach_shared", "detach_both"), default="detach_both")
     p.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     p.add_argument("--min-free-vram-gb", type=float, default=2.0)
     p.add_argument("--max-vram-fraction", type=float, default=0.80)
@@ -318,6 +320,7 @@ def main() -> int:
         "weight_decay": args.weight_decay,
         "active_mode": args.active_mode,
         "cache_key_mode": args.cache_key_mode,
+        "gradient_isolation": args.gradient_isolation,
         "min_free_vram_gb": args.min_free_vram_gb,
         "max_vram_fraction": args.max_vram_fraction,
         "device": str(device),
@@ -422,6 +425,7 @@ def main() -> int:
                             out_dims=[s.out_dim for s in suite.specs],
                             active_mode=args.active_mode,
                             cache_key_mode=args.cache_key_mode,
+                            gradient_isolation=args.gradient_isolation,
                         ).to(device)
                         record["cost"] = model_cost(model, model_kind, suite, suite.meta["in_dim"], width, [s.out_dim for s in suite.specs])
 

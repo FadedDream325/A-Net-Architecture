@@ -37,6 +37,7 @@ def main() -> int:
     p.add_argument("--models", nargs="+", default=["independent", "anet_basic", "anet_full"])
     p.add_argument("--batch-sizes", nargs="+", type=int, default=[1, 1024])
     p.add_argument("--repeats", type=int, default=100)
+    p.add_argument("--gradient-isolation", choices=("none", "detach_aux", "detach_shared", "detach_both"), default="detach_both")
     p.add_argument("--min-free-vram-gb", type=float, default=2.0)
     p.add_argument("--max-vram-fraction", type=float, default=0.80)
     p.add_argument("--out-dir", type=Path, default=ROOT / "experiments" / "anet_v2" / "results" / "refactor_benchmark")
@@ -66,6 +67,7 @@ def main() -> int:
                         hidden_dim=width,
                         out_dims=[s.out_dim for s in suite.specs],
                         active_mode="sparse",
+                        gradient_isolation=args.gradient_isolation,
                     ).to(device)
                     model.eval()
                     out = benchmark_inference(
