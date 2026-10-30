@@ -1,0 +1,55 @@
+{
+  "config": {
+    "widths": [
+      64
+    ],
+    "workflows": [
+      2,
+      3
+    ],
+    "models": [
+      "anet_basic",
+      "anet_share",
+      "anet_reuse",
+      "anet_full"
+    ],
+    "active_mode": "pair",
+    "correlations": [
+      "medium"
+    ],
+    "seeds": [
+      2026
+    ],
+    "epochs": 1,
+    "train_size": 6000,
+    "val_size": 1500,
+    "test_size": 1500,
+    "batch_size": 512,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "gradient_isolation": "detach_both",
+    "min_free_vram_gb": 2.0,
+    "max_vram_fraction": 0.8,
+    "bench_batches": [
+      1
+    ],
+    "bench_repeats": 2,
+    "cache_eval": false,
+    "cache_eval_width": 2048,
+    "cache_eval_workflows": 3,
+    "cache_eval_correlation": "medium",
+    "cache_rates": [
+      0.0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "cache_batches": [
+      1,
+      256
+    ],
+    "cache_requests": 100,
+    "max_steps": 10
+  },
+  "config_hash": "ab1f16e5895a5f3173a938dd97290263a1440399aa0b6893cb0c0f896ef44bf4"
+}
