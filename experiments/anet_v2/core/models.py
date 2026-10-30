@@ -117,12 +117,15 @@ class ANetModel(nn.Module):
         cache_max_entries: int = 4096,
         cache_max_bytes: int = 256 * 1024 * 1024,
         cache_key_mode: str = "identity",
+        gradient_isolation: str = "none",
     ):
         super().__init__()
         if share_mode not in {"none", "block", "adapter"}:
             raise ValueError(f"bad share_mode {share_mode}")
         if active_mode not in {"sparse", "pair", "dense"}:
             raise ValueError(f"bad active_mode {active_mode}")
+        if gradient_isolation not in {"none", "detach_aux", "detach_shared", "detach_both"}:
+            raise ValueError(f"bad gradient_isolation {gradient_isolation}")
         self.num_tasks = num_tasks
         self.in_dim = in_dim
         self.hidden_dim = hidden_dim
@@ -130,6 +133,9 @@ class ANetModel(nn.Module):
         self.workflow_out_dim = workflow_out_dim or max(1, hidden_dim // 2)
         self.share_mode = share_mode
         self.active_mode = active_mode
+        self.gradient_isolation = gradient_isolation
+        self._detach_aux = gradient_isolation in {"detach_aux", "detach_both"}
+        self._detach_shared = gradient_isolation in {"detach_shared", "detach_both"}
         self.adapter_rank = adapter_rank
         if cache_key_mode not in {"identity", "content"}:
             raise ValueError(f"bad cache_key_mode {cache_key_mode}")
@@ -364,9 +370,14 @@ class ANetModel(nn.Module):
         if self._has_adapters:
             for w in active:
                 cross = self._cross_blocks[w](h0)
+                if self._detach_shared:
+                    cross = cross.detach()
                 own = self._own_blocks[w](h0)
                 s = cross + self._adapter_blocks[w](cross)
-                zs.append(own + s)
+                z = own + s
+                if self._detach_aux and w != task_id:
+                    z = z.detach()
+                zs.append(z)
                 if track:
                     self._record(self._cross_blocks[w], self._caller_names[w], "cross", True, False)
                     self._record(self._adapter_blocks[w], self._caller_names[w], "adapter", True, False)
@@ -374,8 +385,13 @@ class ANetModel(nn.Module):
         else:
             for w in active:
                 cross = self._cross_blocks[w](h0)
+                if self._detach_shared:
+                    cross = cross.detach()
                 own = self._own_blocks[w](h0)
-                zs.append(own + cross)
+                z = own + cross
+                if self._detach_aux and w != task_id:
+                    z = z.detach()
+                zs.append(z)
                 if track:
                     self._record(self._cross_blocks[w], self._caller_names[w], "cross", True, False)
                     self._record(self._own_blocks[w], self._caller_names[w], "own", True, False)
@@ -398,14 +414,24 @@ class ANetModel(nn.Module):
         if self._has_adapters:
             for w in active:
                 cross = self._call_cached(self._cross_blocks[w], self._caller_names[w], "cross", h0, track)
+                if self._detach_shared:
+                    cross = cross.detach()
                 own = self._call_cached(self._own_blocks[w], self._caller_names[w], "own", h0, track)
                 s = cross + self._call_cached(self._adapter_blocks[w], self._caller_names[w], "adapter", cross, track)
-                zs.append(own + s)
+                z = own + s
+                if self._detach_aux and w != task_id:
+                    z = z.detach()
+                zs.append(z)
         else:
             for w in active:
                 cross = self._call_cached(self._cross_blocks[w], self._caller_names[w], "cross", h0, track)
+                if self._detach_shared:
+                    cross = cross.detach()
                 own = self._call_cached(self._own_blocks[w], self._caller_names[w], "own", h0, track)
-                zs.append(own + cross)
+                z = own + cross
+                if self._detach_aux and w != task_id:
+                    z = z.detach()
+                zs.append(z)
         logits = self.terminal(zs, task_id, active)
         if track:
             self._finish_tracking(task_id)
@@ -518,6 +544,7 @@ class ANetModel(nn.Module):
             "share_mode": self.share_mode,
             "cache_enabled": self.cache.enabled,
             "cache_key_mode": self.cache_key_mode,
+            "gradient_isolation": self.gradient_isolation,
             "active_mode": self.active_mode,
             "graph": self.graph.summary(),
             "accounting": accounting,
@@ -542,6 +569,7 @@ def build_model(
     workflow_out_dim: int | None = None,
     active_mode: str = "sparse",
     cache_key_mode: str = "identity",
+    gradient_isolation: str = "none",
 ) -> nn.Module:
     if kind == "independent":
         return IndependentBaselineV2(num_tasks, in_dim, hidden_dim, out_dims)
@@ -550,25 +578,25 @@ def build_model(
     if kind == "anet_basic":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="none",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     if kind == "anet_share":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="block",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     if kind == "anet_reuse":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="none",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     if kind == "anet_full":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="block",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     if kind == "anet_adapter":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="adapter",
-                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=False, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     if kind == "anet_full_adapter":
         return ANetModel(num_tasks, in_dim, hidden_dim, out_dims,
                          workflow_out_dim=workflow_out_dim, share_mode="adapter",
-                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode)
+                         cache_enabled=True, active_mode=active_mode, cache_key_mode=cache_key_mode, gradient_isolation=gradient_isolation)
     raise KeyError(f"unknown model {kind}")

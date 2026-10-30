@@ -33,8 +33,8 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def run_id(width: int, corr: str, mode: str, model: str, seed: int) -> str:
-    return f"h{width:04d}__{corr}__{mode}__{model}__s{seed}"
+def run_id(width: int, corr: str, mode: str, model: str, seed: int, isolation: str) -> str:
+    return f"h{width:04d}__{corr}__{mode}__{model}__{isolation}__s{seed}"
 
 
 def load_done(path: Path) -> set[str]:
@@ -90,6 +90,7 @@ def main() -> int:
     p.add_argument("--widths", nargs="+", type=int, default=[128, 512, 2048])
     p.add_argument("--models", nargs="+", default=["independent", "anet_basic", "anet_share", "anet_adapter"])
     p.add_argument("--active-modes", nargs="+", choices=("pair", "dense"), default=["pair", "dense"])
+    p.add_argument("--gradient-isolation", choices=("none", "detach_aux", "detach_shared", "detach_both"), default="none")
     p.add_argument("--correlations", nargs="+", default=["low", "medium", "high"], choices=list(CORRELATIONS))
     p.add_argument("--seeds", nargs="+", type=int, default=[2026, 2027, 2028, 2029, 2030])
     p.add_argument("--epochs", type=int, default=30)
@@ -126,6 +127,7 @@ def main() -> int:
         "widths": args.widths,
         "models": args.models,
         "active_modes": args.active_modes,
+        "gradient_isolation": args.gradient_isolation,
         "correlations": args.correlations,
         "seeds": args.seeds,
         "epochs": args.epochs,
@@ -152,7 +154,7 @@ def main() -> int:
     env = environment()
     (out_dir / "environment.json").write_text(json.dumps(env, indent=2), encoding="utf-8")
 
-    print(f"Stage 2 modes={args.active_modes} widths={args.widths} models={args.models}", flush=True)
+    print(f"Stage 2 modes={args.active_modes} widths={args.widths} models={args.models} isolation={args.gradient_isolation}", flush=True)
     done = load_done(raw_path) if args.resume else set()
     data_cache = {}
     warm_suite = build_suite(args.seeds[0], args.correlations[0],
@@ -174,7 +176,7 @@ def main() -> int:
                     for kind in args.models:
                         if kind == "independent" and mode != args.active_modes[0]:
                             continue
-                        rid = run_id(width, corr, mode, kind, seed)
+                        rid = run_id(width, corr, mode, kind, seed, args.gradient_isolation)
                         if rid in done:
                             continue
                         if args.max_runs is not None and runs >= args.max_runs:
@@ -187,6 +189,7 @@ def main() -> int:
                             "status": "failed",
                             "started_utc": utc_now(),
                             "active_mode": mode,
+                            "gradient_isolation": args.gradient_isolation,
                             "width": width,
                             "correlation": corr,
                             "seed": seed,
@@ -210,6 +213,7 @@ def main() -> int:
                                 hidden_dim=width,
                                 out_dims=[s.out_dim for s in suite.specs],
                                 active_mode=mode,
+                                gradient_isolation=args.gradient_isolation,
                             ).to(device)
                             record["cost"] = model_cost(model, kind, suite, suite.meta["in_dim"], width,
                                                         [s.out_dim for s in suite.specs])
