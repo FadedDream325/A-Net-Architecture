@@ -127,8 +127,8 @@ class TerminalL1(nn.Module):
         self.num_tasks = num_tasks
         self.feature_dim = feature_dim
         self.out_dims = list(out_dims)
-        self.heads = nn.ModuleDict(
-            {str(t): nn.Linear(feature_dim, out_dims[t]) for t in range(num_tasks)}
+        self.heads = nn.ModuleList(
+            [nn.Linear(feature_dim, out_dims[t]) for t in range(num_tasks)]
         )
         # Per-task soft weights over workflow slots; masked to active workflows.
         self.gates = nn.Parameter(torch.zeros(num_tasks, num_tasks))
@@ -154,7 +154,7 @@ class TerminalL1(nn.Module):
             logits = self.gates[task_id].index_select(0, idx)
             weights = F.softmax(logits, dim=0).to(stacked.dtype)  # [K]
             pooled = torch.einsum("k,bke->be", weights, stacked)
-        return self.heads[str(task_id)](pooled)
+        return self.heads[task_id](pooled)
 
     def parameter_count(self) -> int:
         return sum(p.numel() for p in self.parameters())

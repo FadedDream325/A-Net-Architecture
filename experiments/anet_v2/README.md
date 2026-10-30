@@ -84,3 +84,31 @@ Every run records the git commit, tracked-diff hash, git status, a SHA256 of
 the v2 Python sources and tests, the full config, data hashes, environment,
 and raw latency samples. Results are append-only JSONL; summaries are derived
 files. The legacy scaling results remain untouched.
+
+
+## Router and cache refactor (2026-10-30)
+
+- Routing is resolved once at construction: _active_table and direct block
+  references (_prel1_block, _own_blocks, _cross_blocks, _adapter_blocks).
+  The hot path uses tuple/list indexing, not per-forward if/else task
+  prediction.
+- TerminalL1 uses nn.ModuleList heads and a K=1 fast path.
+- forward_mixed uses torch.argsort(task_ids, stable=True), computes contiguous
+  task groups, then applies the inverse permutation. There is no per-sample
+  Python mask and no warp-level task branching.
+- ANetModel.set_inference_cache(False) is the default for eval: a single
+  request runs the pure matrix-multiply path with no cache key construction or
+  lookup. set_inference_cache(True) enables request-level cache reuse.
+- benchmark_inference(..., inference_cache=False) and the runner flag
+  --inference-cache/--no-inference-cache expose the switch.
+- core/device_guard.py refuses to start below --min-free-vram-gb (default
+  2.0 GiB) and caps the PyTorch allocator at --max-vram-fraction (default
+  0.80), so experiments do not silently spill into Windows shared GPU memory.
+- Each run records vram_before, vram_after, gpu_peak_allocated_bytes,
+  host_to_device_bytes, and input_device.
+
+Refactor benchmark command:
+
+    python -m experiments.anet_v2.runners.benchmark_router_cache \
+      --widths 64 256 1024 2048 --seeds 2026 2027 2028 \
+      --out-dir experiments/anet_v2/results/refactor_benchmark

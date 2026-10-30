@@ -26,6 +26,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from experiments.anet_v2.core.benchmark import benchmark_inference
+from experiments.anet_v2.core.device_guard import enforce_dedicated_vram, snapshot as vram_snapshot
 from experiments.anet_v2.core.models import ANetModel, MODEL_KEYS, MODEL_LABELS, build_model
 from experiments.anet_v2.core.tasks import CORRELATIONS, build_suite
 from experiments.anet_v2.core.train import TrainConfig, evaluate_model, set_seed, train_model
@@ -83,6 +84,7 @@ def environment() -> dict:
         "code_hash": code_hash(),
         "cwd": str(Path.cwd()),
         "argv": sys.argv,
+        "vram": vram_snapshot() if torch.cuda.is_available() else {"cuda": False},
     }
     if torch.cuda.is_available():
         props = torch.cuda.get_device_properties(0)
@@ -258,10 +260,13 @@ def main() -> int:
     p.add_argument("--active-mode", choices=("sparse", "pair", "dense"), default="sparse")
     p.add_argument("--cache-key-mode", choices=("identity", "content"), default="identity")
     p.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    p.add_argument("--min-free-vram-gb", type=float, default=2.0)
+    p.add_argument("--max-vram-fraction", type=float, default=0.80)
     p.add_argument("--bench-batches", nargs="+", type=int, default=[1, 64, 256, 1024])
     p.add_argument("--bench-repeats", type=int, default=100)
     p.add_argument("--benchmark", action=argparse.BooleanOptionalAction, default=True)
     p.add_argument("--reset-cache-each-repeat", action=argparse.BooleanOptionalAction, default=True)
+    p.add_argument("--inference-cache", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--save-checkpoints", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--max-steps", type=int, default=None)
     p.add_argument("--max-runs", type=int, default=None)
@@ -289,6 +294,11 @@ def main() -> int:
     elif device.type == "cuda":
         torch.cuda.init()
         torch.backends.cuda.matmul.allow_tf32 = False
+        vram_guard = enforce_dedicated_vram(
+            min_free_gb=args.min_free_vram_gb,
+            max_fraction=args.max_vram_fraction,
+        )
+        print(f"VRAM guard: {vram_guard}", flush=True)
 
     out_dir = args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -308,11 +318,14 @@ def main() -> int:
         "weight_decay": args.weight_decay,
         "active_mode": args.active_mode,
         "cache_key_mode": args.cache_key_mode,
+        "min_free_vram_gb": args.min_free_vram_gb,
+        "max_vram_fraction": args.max_vram_fraction,
         "device": str(device),
         "bench_batches": args.bench_batches,
         "bench_repeats": args.bench_repeats,
         "benchmark": args.benchmark,
         "reset_cache_each_repeat": args.reset_cache_each_repeat,
+        "inference_cache": args.inference_cache,
         "save_checkpoints": args.save_checkpoints,
         "max_steps": args.max_steps,
     }
@@ -373,6 +386,11 @@ def main() -> int:
                         print(f"reached max-runs={args.max_runs}", flush=True)
                         break
                     runs_started += 1
+                    if device.type == "cuda":
+                        enforce_dedicated_vram(
+                            min_free_gb=args.min_free_vram_gb,
+                            max_fraction=args.max_vram_fraction,
+                        )
                     print(f"[run] {rid}", flush=True)
                     record = {
                         "run_id": rid,
@@ -391,6 +409,7 @@ def main() -> int:
                         "git_dirty_hash": env["git_dirty_hash"],
                         "git_status": env["git_status"],
                         "code_hash": env["code_hash"],
+                        "vram_before": vram_snapshot() if device.type == "cuda" else {"cuda": False},
                     }
                     model = None
                     try:
@@ -462,6 +481,7 @@ def main() -> int:
                                 repeats=args.bench_repeats,
                                 modes=modes,
                                 reset_cache_each_repeat=args.reset_cache_each_repeat,
+                                inference_cache=args.inference_cache,
                             )
                             if isinstance(model, ANetModel):
                                 record["cost_after_bench"] = model.cost_summary()
@@ -482,6 +502,10 @@ def main() -> int:
                         record["traceback"] = traceback.format_exc()
                         record["finished_utc"] = utc_now()
                         print(f"  FAILED {record['error']}", flush=True)
+                    record["vram_after"] = vram_snapshot() if device.type == "cuda" else {"cuda": False}
+                    if device.type == "cuda":
+                        record["gpu_peak_allocated_bytes"] = int(torch.cuda.max_memory_allocated())
+                        record["gpu_peak_reserved_bytes"] = int(torch.cuda.max_memory_reserved())
                     with open(raw_path, "a", encoding="utf-8") as fh:
                         fh.write(json.dumps(record, ensure_ascii=False) + "\n")
                         fh.flush()

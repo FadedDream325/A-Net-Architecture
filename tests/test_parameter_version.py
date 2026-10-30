@@ -45,6 +45,7 @@ def test_model_mark_updated_clears_cache_and_bumps_every_block():
         active_mode="sparse",
     )
     model.eval()
+    model.set_inference_cache(True)
     x = torch.randn(4, 6)
     model(x, 0)
     assert model.cache.size > 0

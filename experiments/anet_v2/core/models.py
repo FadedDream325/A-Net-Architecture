@@ -214,6 +214,15 @@ class ANetModel(nn.Module):
             self.workflow_objs.append(wf)
 
         self.terminal = TerminalL1(num_tasks, e, out_dims)
+        # Hot-path tables: routing and block references are resolved once.
+        self._active_table = tuple(self._make_active(t) for t in range(num_tasks))
+        self._prel1_block = self.registry.get(self.prel1_id)
+        self._own_blocks = [self.registry.get(i) for i in self.own_ids]
+        self._cross_blocks = [self.registry.get(i) for i in self.cross_ids]
+        self._adapter_blocks = [self.registry.get(i) if i else None for i in self.adapter_ids]
+        self._has_adapters = bool(self.adapter_ids and any(self.adapter_ids))
+        self._caller_names = [f"w{t}" for t in range(num_tasks)]
+        self.inference_cache = False
         self.graph = self._build_graph()
         self.graph.assert_acyclic()
 
@@ -258,15 +267,18 @@ class ANetModel(nn.Module):
         )
         return graph
 
+    def _make_active(self, task_id: int) -> tuple[int, ...]:
+        if self.active_mode == "sparse":
+            return (task_id,)
+        if self.active_mode == "pair":
+            return (task_id, (task_id + 1) % self.num_tasks)
+        return tuple(range(self.num_tasks))
+
     def resolve_active(self, task_id: int, active_ids: list[int] | None = None) -> list[int]:
         if not 0 <= task_id < self.num_tasks:
             raise ValueError(f"invalid task_id {task_id}")
         if active_ids is None:
-            if self.active_mode == "sparse":
-                return [task_id]
-            if self.active_mode == "pair":
-                return [task_id, (task_id + 1) % self.num_tasks]
-            return list(range(self.num_tasks))
+            return list(self._active_table[task_id])
         active = list(dict.fromkeys(int(i) for i in active_ids))
         if not active:
             raise ValueError("active_ids must be non-empty")
@@ -274,6 +286,14 @@ class ANetModel(nn.Module):
             if not 0 <= i < self.num_tasks:
                 raise ValueError(f"invalid active workflow {i}")
         return active
+
+    def set_inference_cache(self, enabled: bool) -> None:
+        """Switch for single-request inference.
+
+        False is the default: an eval forward then runs the pure matrix-multiply
+        path with no cache key construction or lookup.
+        """
+        self.inference_cache = bool(enabled)
 
     def _config(self, block: ParameterBlock) -> dict:
         return {
@@ -286,21 +306,17 @@ class ANetModel(nn.Module):
             "param_token": block.param_version_token(),
         }
 
-    def _call_block(
+    def _record(self, block: ParameterBlock, caller: str, kind: str, executed: bool, cached: bool) -> None:
+        self.accounting.record(block, caller, executed=executed, cached=cached, kind=kind)
+
+    def _call_cached(
         self,
-        block_id: str,
-        x: torch.Tensor,
+        block: ParameterBlock,
         caller: str,
-        kind: str = "regular",
-        *,
-        use_cache: bool | None = None,
+        kind: str,
+        x: torch.Tensor,
+        track: bool,
     ) -> torch.Tensor:
-        block = self.registry.require_call(block_id, caller) if caller.startswith("w") else self.registry.get(block_id)
-        cache_on = self.cache.enabled if use_cache is None else use_cache
-        if not cache_on:
-            out = block(x)
-            self.accounting.record(block, caller, executed=True, cached=False, kind=kind)
-            return out
         if self.cache_key_mode == "content":
             input_hash, hash_us = tensor_fingerprint(x)
             self.cache.stats["hash_us"] += hash_us
@@ -314,66 +330,138 @@ class ANetModel(nn.Module):
         )
         cached = self.cache.get(key)
         if cached is not None:
-            self.accounting.record(block, caller, executed=False, cached=True, kind=kind)
+            if track:
+                self._record(block, caller, kind, executed=False, cached=True)
             return cached
         out = block(x)
         self.cache.put(key, out)
-        self.accounting.record(block, caller, executed=True, cached=False, kind=kind)
+        if track:
+            self._record(block, caller, kind, executed=True, cached=False)
         return out
 
-    def forward(
-        self,
-        x: torch.Tensor,
-        task_id: int,
-        active_ids: list[int] | None = None,
-    ) -> torch.Tensor:
-        active = self.resolve_active(task_id, active_ids)
-        self.last_active_ids = active
-        self.accounting.reset()
-        h0 = self._call_block(self.prel1_id, x, "L1_pre", kind="prel1")
-        zs: list[torch.Tensor] = []
-        for w in active:
-            cross = self._call_block(self.cross_ids[w], h0, f"w{w}", kind="cross")
-            own = self._call_block(self.own_ids[w], h0, f"w{w}", kind="own")
-            s = cross
-            if self.share_mode == "adapter":
-                s = s + self._call_block(
-                    self.adapter_ids[w], s, f"w{w}", kind="adapter"
-                )
-            zs.append(own + s)
-        logits = self.terminal(zs, task_id, active)
-        head = self.terminal.heads[str(task_id)]
+    def _finish_tracking(self, task_id: int) -> None:
+        head = self.terminal.heads[task_id]
         self._last_terminal_params = sum(p.numel() for p in head.parameters()) + self.terminal.gates.numel()
         self._last_terminal_flops = 2 * head.in_features * head.out_features
         self.last_accounting = self.accounting.summary(
             extra_params=self._last_terminal_params,
             extra_flops_per_sample=self._last_terminal_flops,
         )
+
+    def _forward_uncached(
+        self,
+        x: torch.Tensor,
+        task_id: int,
+        active: tuple[int, ...] | list[int],
+        track: bool,
+    ) -> torch.Tensor:
+        if track:
+            self.accounting.reset()
+        h0 = self._prel1_block(x)
+        if track:
+            self._record(self._prel1_block, "L1_pre", "prel1", executed=True, cached=False)
+        zs: list[torch.Tensor] = []
+        if self._has_adapters:
+            for w in active:
+                cross = self._cross_blocks[w](h0)
+                own = self._own_blocks[w](h0)
+                s = cross + self._adapter_blocks[w](cross)
+                zs.append(own + s)
+                if track:
+                    self._record(self._cross_blocks[w], self._caller_names[w], "cross", True, False)
+                    self._record(self._adapter_blocks[w], self._caller_names[w], "adapter", True, False)
+                    self._record(self._own_blocks[w], self._caller_names[w], "own", True, False)
+        else:
+            for w in active:
+                cross = self._cross_blocks[w](h0)
+                own = self._own_blocks[w](h0)
+                zs.append(own + cross)
+                if track:
+                    self._record(self._cross_blocks[w], self._caller_names[w], "cross", True, False)
+                    self._record(self._own_blocks[w], self._caller_names[w], "own", True, False)
+        logits = self.terminal(zs, task_id, active)
+        if track:
+            self._finish_tracking(task_id)
         return logits
 
-    def forward_mixed(self, x: torch.Tensor, task_ids: torch.Tensor) -> torch.Tensor:
-        """Evaluate a mixed-task batch; preserves the input order.
+    def _forward_cached(
+        self,
+        x: torch.Tensor,
+        task_id: int,
+        active: tuple[int, ...] | list[int],
+        track: bool,
+    ) -> torch.Tensor:
+        if track:
+            self.accounting.reset()
+        h0 = self._call_cached(self._prel1_block, "L1_pre", "prel1", x, track)
+        zs: list[torch.Tensor] = []
+        if self._has_adapters:
+            for w in active:
+                cross = self._call_cached(self._cross_blocks[w], self._caller_names[w], "cross", h0, track)
+                own = self._call_cached(self._own_blocks[w], self._caller_names[w], "own", h0, track)
+                s = cross + self._call_cached(self._adapter_blocks[w], self._caller_names[w], "adapter", cross, track)
+                zs.append(own + s)
+        else:
+            for w in active:
+                cross = self._call_cached(self._cross_blocks[w], self._caller_names[w], "cross", h0, track)
+                own = self._call_cached(self._own_blocks[w], self._caller_names[w], "own", h0, track)
+                zs.append(own + cross)
+        logits = self.terminal(zs, task_id, active)
+        if track:
+            self._finish_tracking(task_id)
+        return logits
 
-        Tasks have different output widths, so outputs are padded on the right
-        to max(out_dims).  The padding is zero and is ignored by per-task
-        evaluation.
+    def forward(
+        self,
+        x: torch.Tensor,
+        task_id: int,
+        active_ids: list[int] | None = None,
+        *,
+        track: bool = True,
+        use_cache: bool | None = None,
+    ) -> torch.Tensor:
+        if not 0 <= task_id < self.num_tasks:
+            raise ValueError(f"invalid task_id {task_id}")
+        active = self._active_table[task_id] if active_ids is None else tuple(self.resolve_active(task_id, active_ids))
+        self.last_active_ids = list(active)
+        param_device = next(self.parameters()).device
+        if x.device != param_device:
+            raise RuntimeError(
+                f"input device {x.device} does not match model device {param_device}; "
+                "inference is GPU-only when the model is on CUDA"
+            )
+        cache_on = self.cache.enabled if use_cache is None else bool(use_cache)
+        if cache_on and (self.training or self.inference_cache):
+            return self._forward_cached(x, task_id, active, track)
+        return self._forward_uncached(x, task_id, active, track)
+
+    def forward_mixed(self, x: torch.Tensor, task_ids: torch.Tensor) -> torch.Tensor:
+        """Group by Task ID with torch.argsort, compute contiguous groups, then
+        invert the permutation.  No per-sample Python mask or warp divergence.
         """
         if x.shape[0] != task_ids.shape[0]:
             raise ValueError("x and task_ids batch sizes differ")
+        if x.device != task_ids.device:
+            raise RuntimeError("x and task_ids must be on the same device")
+        order = torch.argsort(task_ids, stable=True)
+        inverse = torch.argsort(order)
+        sorted_x = x.index_select(0, order)
+        sorted_t = task_ids.index_select(0, order)
+        unique, counts = torch.unique_consecutive(sorted_t, return_counts=True)
         max_dim = max(self.out_dims)
-        ordered: list[torch.Tensor | None] = [None] * x.shape[0]
-        for t in range(self.num_tasks):
-            mask = task_ids == t
-            if not mask.any():
-                continue
-            val = self.forward(x[mask], t)
+        outs: list[torch.Tensor] = []
+        start = 0
+        for i in range(unique.numel()):
+            t = int(unique[i].item())
+            n = int(counts[i].item())
+            end = start + n
+            val = self.forward(sorted_x[start:end], t)
             if val.size(1) < max_dim:
-                pad = val.new_zeros(val.size(0), max_dim - val.size(1))
-                val = torch.cat([val, pad], dim=1)
-            idx = mask.nonzero(as_tuple=False).squeeze(1)
-            for row, pos in enumerate(idx.tolist()):
-                ordered[pos] = val[row]
-        return torch.stack(ordered, dim=0)
+                val = torch.cat([val, val.new_zeros(val.size(0), max_dim - val.size(1))], dim=1)
+            outs.append(val)
+            start = end
+        out = torch.cat(outs, dim=0)
+        return out.index_select(0, inverse)
 
     def begin_step(self, step: int | None = None) -> None:
         if self.training:

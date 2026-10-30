@@ -31,7 +31,7 @@ def test_terminal_receives_only_workflow_features():
 
     assert logits.shape == (5, 2)
     assert captured["task_id"] == 0
-    assert captured["active_ids"] == [0, 2]
+    assert list(captured["active_ids"]) == [0, 2]
     assert len(captured["outputs"]) == 2
     for z in captured["outputs"]:
         assert z.shape == (5, model.workflow_out_dim)

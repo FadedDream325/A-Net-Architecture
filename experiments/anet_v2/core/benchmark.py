@@ -103,8 +103,11 @@ def benchmark_inference(
     warmup: int = 20,
     task_id: int = 0,
     reset_cache_each_repeat: bool = False,
+    inference_cache: bool = False,
 ) -> dict:
     model.eval()
+    if isinstance(model, ANetModel):
+        model.set_inference_cache(inference_cache)
     model.to(device)
     param_device = next(model.parameters()).device
     if device.type == "cuda":

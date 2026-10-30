@@ -29,6 +29,7 @@ def test_cache_off_counts_every_call():
 def test_cache_on_reduces_executions_but_not_theoretical_work():
     model = _model("block", True)
     model.eval()
+    model.set_inference_cache(True)
     x = torch.randn(7, 6)
     model(x, 0)
     acc = model.cost_summary()["accounting"]
