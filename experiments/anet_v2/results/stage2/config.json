@@ -1,0 +1,49 @@
+{
+  "config": {
+    "widths": [
+      128,
+      512,
+      2048
+    ],
+    "models": [
+      "independent",
+      "anet_basic",
+      "anet_share",
+      "anet_adapter"
+    ],
+    "active_modes": [
+      "pair",
+      "dense"
+    ],
+    "correlations": [
+      "low",
+      "medium",
+      "high"
+    ],
+    "seeds": [
+      2026,
+      2027,
+      2028,
+      2029,
+      2030
+    ],
+    "epochs": 30,
+    "train_size": 6000,
+    "val_size": 1500,
+    "test_size": 1500,
+    "batch_size": 512,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "min_free_vram_gb": 2.0,
+    "max_vram_fraction": 0.8,
+    "bench_batches": [
+      1,
+      256,
+      1024
+    ],
+    "bench_repeats": 100,
+    "benchmark": true,
+    "max_steps": null
+  },
+  "config_hash": "2682382c994fe15abc79862d32d5c0edb8d364790040cf05681e30dde9580492"
+}
