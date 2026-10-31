@@ -116,15 +116,17 @@ def evaluate_code(model, n: int, seed: int, device):
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--seeds", nargs="+", type=int, default=[2026, 2027, 2028])
+    p.add_argument("--archs", nargs="+", default=["transformer12", "shared_depth"])
     p.add_argument("--n", type=int, default=100)
+    p.add_argument("--checkpoint-dir", type=Path, default=ROOT / "results" / "phase1_pure" / "checkpoints")
     p.add_argument("--out", type=Path, default=ROOT / "results" / "phase1_pure" / "eval.json")
     args = p.parse_args()
     device = torch.device("cuda")
     out = []
-    for arch in ("transformer12", "shared_depth"):
+    for arch in args.archs:
         for seed in args.seeds:
             for ratio, domain in ((1.0, "math"), (0.0, "code")):
-                ckpt = CKPT / f"{arch}__s{seed}__m{ratio}__batch.pt"
+                ckpt = args.checkpoint_dir / f"{arch}__s{seed}__m{ratio}__batch.pt"
                 if not ckpt.exists():
                     print("missing", ckpt, flush=True)
                     continue

@@ -1,0 +1,27 @@
+{
+  "steps": 2929,
+  "math_steps": 5858,
+  "seeds": [
+    2026,
+    2027,
+    2028
+  ],
+  "archs": [
+    "transformer12",
+    "anet_no_terminal"
+  ],
+  "ratios": [
+    1.0,
+    0.0
+  ],
+  "modes": [
+    "batch"
+  ],
+  "batch": 16,
+  "seq": 128,
+  "lr": 0.0003,
+  "quick": false,
+  "save_checkpoints": true,
+  "checkpoint_dir": "experiments\\anet_v2\\lang50m\\results\\phase1_no_terminal_math12m\\checkpoints",
+  "out_dir": "experiments\\anet_v2\\lang50m\\results\\phase1_no_terminal_math12m"
+}

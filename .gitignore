@@ -230,3 +230,6 @@ experiments/anet_v2/lang50m/data60m/*.bin
 
 # Phase 1 pure-domain checkpoints (large, regenerate with phase1_train.py)
 experiments/anet_v2/lang50m/results/phase1_pure/checkpoints/
+
+# Phase 1 no-terminal checkpoints
+experiments/anet_v2/lang50m/results/phase1_no_terminal_math12m/checkpoints/

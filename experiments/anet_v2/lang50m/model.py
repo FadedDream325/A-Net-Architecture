@@ -164,6 +164,52 @@ class SharedDepthANetLM(nn.Module):
         return self.heads[task](self.ln_f(h))
 
 
+class NoTerminalANetLM(nn.Module):
+    """A-Net without terminal L1 / cross-workflow integration.
+
+    12-block design: pre 2 + one primary workflow 4 + shared 2.  Only the
+    primary workflow for the task is used; the shared stack is added as a
+    residual feature.  There is no terminal weighted average or auxiliary
+    workflow output.
+    """
+
+    def __init__(self, vocab: int = 256, d: int = 512, heads: int = 8, ffn: int = 2000,
+                 pre_blocks: int = 2, workflows: int = 3, blocks_per_workflow: int = 4,
+                 shared_blocks: int = 2, tasks: int = 3):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, d)
+        self.pre = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(pre_blocks)])
+        self.workflows = nn.ModuleList([
+            nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(blocks_per_workflow)])
+            for _ in range(workflows)
+        ])
+        self.shared = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(shared_blocks)])
+        self.ln_f = nn.LayerNorm(d)
+        self.heads = nn.ModuleList([nn.Linear(d, vocab) for _ in range(tasks)])
+        self.workflows_n = workflows
+        self.mask = None
+
+    def _mask(self, T: int, device):
+        if self.mask is None or self.mask.size(0) != T or self.mask.device != device:
+            self.mask = torch.triu(torch.ones(T, T, device=device, dtype=torch.bool), diagonal=1)
+        return self.mask
+
+    def forward(self, x: torch.Tensor, task: int) -> torch.Tensor:
+        h = self.embed(x)
+        m = self._mask(x.size(1), x.device)
+        for block in self.pre:
+            h = block(h, m)
+        shared = h
+        for block in self.shared:
+            shared = block(shared, m)
+        w = task % self.workflows_n
+        z = h
+        for block in self.workflows[w]:
+            z = block(z, m)
+        z = z + shared
+        return self.heads[task](self.ln_f(z))
+
+
 def parameter_counts(model: nn.Module) -> dict:
     unique = sum(p.numel() for p in model.parameters() if p.requires_grad)
     shared_params = 0
@@ -180,6 +226,14 @@ def parameter_counts(model: nn.Module) -> dict:
         active += shared_params
         active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
         reference = unique + shared_params  # shared stack referenced by both active workflows
+    elif isinstance(model, NoTerminalANetLM):
+        shared_params = sum(p.numel() for b in model.shared for p in b.parameters())
+        active = sum(p.numel() for p in model.embed.parameters())
+        active += sum(p.numel() for b in model.pre for p in b.parameters())
+        active += sum(p.numel() for b in model.shared for p in b.parameters())
+        active += sum(p.numel() for b in model.workflows[0] for p in b.parameters())
+        active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
+        reference = unique
     elif isinstance(model, SharedDepthANetLM):
         shared_params = sum(p.numel() for b in model.shared for p in b.parameters())
         active = sum(p.numel() for p in model.embed.parameters())

@@ -33,6 +33,7 @@ if str(ROOT) not in sys.path:
 from experiments.anet_v2.lang50m.model import (
     ANetLM,
     SharedBackboneLM,
+    NoTerminalANetLM,
     SharedDepthANetLM,
     TransformerLM,
     parameter_counts,
@@ -62,6 +63,15 @@ def flops_counts(model, seq: int) -> dict:
         return {"active_flops_per_token": blocks + head,
                 "reference_flops_per_token": blocks + head,
                 "active_blocks": len(model.blocks), "unique_blocks": len(model.blocks)}
+    if isinstance(model, NoTerminalANetLM):
+        d = int(model.heads[0].in_features)
+        active_blocks = list(model.pre) + list(model.workflows[0]) + list(model.shared)
+        active = sum(block_flops(b, seq) for b in active_blocks)
+        head = 2 * d * int(model.heads[0].out_features)
+        all_blocks = list(model.pre) + [b for wf in model.workflows for b in wf] + list(model.shared)
+        return {"active_flops_per_token": active + head,
+                "reference_flops_per_token": sum(block_flops(b, seq) for b in all_blocks) + head,
+                "active_blocks": len(active_blocks), "unique_blocks": len(all_blocks)}
     if isinstance(model, SharedDepthANetLM):
         d = int(model.heads[0].in_features)
         active_blocks = model.shared + model.workflows[0]

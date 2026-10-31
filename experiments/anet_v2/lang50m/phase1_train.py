@@ -26,7 +26,12 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from experiments.anet_v2.lang50m.model import SharedDepthANetLM, TransformerLM, parameter_counts
+from experiments.anet_v2.lang50m.model import (
+    NoTerminalANetLM,
+    SharedDepthANetLM,
+    TransformerLM,
+    parameter_counts,
+)
 from experiments.anet_v2.lang50m.phase0 import flops_counts
 from experiments.anet_v2.lang50m.run import get_batch
 
@@ -49,6 +54,8 @@ def make_model(arch: str):
         return TransformerLM(layers=12)
     if arch == "shared_depth":
         return SharedDepthANetLM()
+    if arch == "anet_no_terminal":
+        return NoTerminalANetLM()
     raise KeyError(arch)
 
 
@@ -102,7 +109,8 @@ def evaluate_domain(model, data: torch.Tensor, task: int, device, seq: int, batc
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--steps", type=int, default=2929)  # 6M tokens at 16*128
+    p.add_argument("--steps", type=int, default=2929)  # code: 6M tokens at 16*128
+    p.add_argument("--math-steps", type=int, default=5858)  # math: 12M tokens at 16*128
     p.add_argument("--seeds", nargs="+", type=int, default=[2026])
     p.add_argument("--archs", nargs="+", default=["transformer12", "shared_depth"])
     p.add_argument("--ratios", nargs="+", type=float, default=[1.0, 0.75, 0.5, 0.25, 0.0])
@@ -163,7 +171,8 @@ def main() -> int:
                     torch.cuda.reset_peak_memory_stats()
                     start = time.perf_counter()
                     losses = []
-                    for step in range(args.steps):
+                    run_steps = args.math_steps if ratio >= 1.0 else args.steps
+                    for step in range(run_steps):
                         groups = batch_groups(step, ratio, mode, train, args.batch, args.seq, device)
                         opt.zero_grad(set_to_none=True)
                         loss_sum = 0.0
@@ -186,7 +195,7 @@ def main() -> int:
                     train_c = evaluate_domain(model, train["code"], 1, device, args.seq, batches=5)
                     rec = {
                         "arch": arch, "seed": seed, "ratio_math": ratio, "mode": mode,
-                        "steps": args.steps, "batch": args.batch, "seq": args.seq,
+                        "steps": run_steps, "batch": args.batch, "seq": args.seq,
                         "params": stats,
                         "train_seconds": train_s,
                         "train_loss_last": losses[-1] if losses else None,
