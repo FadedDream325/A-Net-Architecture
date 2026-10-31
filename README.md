@@ -492,6 +492,10 @@ python experiments/anet_v2/scale2b/feasibility.py
 - 单 GPU、单 PyTorch/CUDA 栈。
 - A-Net Shared-Depth 的正结果仍是 pilot 级，p≈0.046，需要更多 seeds 和更大 token 预算复现。
 
+## 最终免责与复现声明
+
+本项目所有结论均受限于单卡 RTX 5060（8GB）及有限算力预算，结果仅供参考，不作为最终工业定论。恳请拥有充足算力（如 8×H100）的机构复现验证。如有逻辑漏洞或数据相悖，欢迎在 GitHub Issues 指正。
+
 ## License
 
 See [LICENSE](LICENSE).

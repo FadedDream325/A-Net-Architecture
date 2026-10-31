@@ -143,7 +143,11 @@ Wn: 每个任务一个 10-block workflow（彼此不共享、不调用）
 - 没有 Lα 特征分解、没有 Lω 可选整合；本实验是“无末端 L1 + 专业输出”的隔离版本。
 - 结果只适用于 byte-level 代理任务，不是 MMLU/GSM8K/HumanEval。
 
-## 9. 产物
+## 9. 最终免责与复现声明
+
+本项目所有结论均受限于单卡 RTX 5060（8GB）及有限算力预算，结果仅供参考，不作为最终工业定论。恳请拥有充足算力（如 8×H100）的机构复现验证。如有逻辑漏洞或数据相悖，欢迎在 GitHub Issues 指正。
+
+## 10. 产物
 
 - 模型：experiments/anet_v2/lang50m/model.py（IsolatedWorkflowANetLM）
 - 训练：experiments/anet_v2/lang50m/phase1_train.py
