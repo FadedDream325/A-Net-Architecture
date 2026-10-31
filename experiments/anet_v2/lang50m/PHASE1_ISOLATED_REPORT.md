@@ -30,6 +30,16 @@ Wn: 每个任务一个 10-block workflow（彼此不共享、不调用）
 | Isolated A-Net | 99,827,968 | 37,501,632 | 40,591,360 | 12 | 1.55–1.84 GB |
 
 - **激活参数和 FLOPs 与 Transformer-12L 基本完全一致**（激活参数差 1,536，FLOPs 相同）。
+
+训练显存实测（allocated / reserved，3 seeds 的 6 个纯域 run）：
+
+| 模型 | allocated 均值 | allocated 最大 | reserved 均值 | reserved 最大 |
+|---|---:|---:|---:|---:|
+| Transformer-12L | 1.508 GB | 1.606 GB | 1.611 GB | 1.719 GB |
+| Isolated A-Net | 1.786 GB | 1.836 GB | 1.925 GB | 1.986 GB |
+
+- A-Net 比 Transformer 多约 **0.278 GB allocated（+18%）**、**0.314 GB reserved（+19%）**。
+- 原因：激活参数相同，但唯一参数 99.8M vs 37.5M，Adam 优化器状态更大；不是激活路径导致。
 - 唯一参数约为 Transformer 的 **2.66×**：L1 2 + 3 个 10 层 workflow。
 - checkpoint：Transformer 150.1 MB；A-Net 399.5 MB。
 - 训练时间：Transformer 346–354 s；A-Net 336–367 s，基本同级。
