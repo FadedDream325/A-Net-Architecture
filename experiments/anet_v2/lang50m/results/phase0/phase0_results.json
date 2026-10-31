@@ -1,0 +1,185 @@
+{
+  "config": {
+    "chars_per_task": 200000,
+    "batch": 2,
+    "seq": 64,
+    "steps": 2,
+    "out_dir": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\results\\phase0",
+    "keep_checkpoints": false
+  },
+  "split_checks": {
+    "text": {
+      "train_bytes": 180000,
+      "val_bytes": 20000,
+      "overlap_32gram_common_idioms": 0,
+      "overlap_256gram": 0,
+      "split_index_disjoint": true,
+      "min_train": 10,
+      "max_train": 122,
+      "min_val": 10,
+      "max_val": 122,
+      "train_last_index": 179999,
+      "val_first_index": 180000
+    },
+    "code": {
+      "train_bytes": 180000,
+      "val_bytes": 20000,
+      "overlap_32gram_common_idioms": 33,
+      "overlap_256gram": 0,
+      "split_index_disjoint": true,
+      "min_train": 10,
+      "max_train": 125,
+      "min_val": 10,
+      "max_val": 125,
+      "train_last_index": 179999,
+      "val_first_index": 180000
+    },
+    "math": {
+      "train_bytes": 180000,
+      "val_bytes": 20000,
+      "overlap_32gram_common_idioms": 0,
+      "overlap_256gram": 0,
+      "split_index_disjoint": true,
+      "min_train": 10,
+      "max_train": 61,
+      "min_val": 10,
+      "max_val": 61,
+      "train_last_index": 179999,
+      "val_first_index": 180000
+    }
+  },
+  "records": [
+    {
+      "arch": "transformer12",
+      "params": {
+        "unique_trainable": 37503168,
+        "reference_parameters": 37503168,
+        "active_parameters_one_forward": 37503168,
+        "shared_parameter_elements": 0,
+        "sharing_ratio": 0.0,
+        "storage_bytes_fp32": 150012672,
+        "storage_mb_fp32": 150.012672,
+        "active_flops_per_token": 39018496,
+        "reference_flops_per_token": 39018496,
+        "active_blocks": 12,
+        "unique_blocks": 12
+      },
+      "output_shape_ok": true,
+      "loss": 5.680905342102051,
+      "grads_finite": true,
+      "checkpoint_bytes": 150065211,
+      "checkpoint_max_abs_diff": 0.0,
+      "bpc": {
+        "text/train": 9.473812571822858,
+        "text/val": 8.922873373055186,
+        "code/train": 7.895703551124044,
+        "code/val": 8.04448367859365,
+        "math/train": 5.599354220533888,
+        "math/val": 5.432126717984786
+      },
+      "train_step_seconds": 14.999755299999947,
+      "peak_allocated_bytes": 821011968,
+      "peak_reserved_bytes": 901775360
+    },
+    {
+      "arch": "shared_depth",
+      "params": {
+        "unique_trainable": 50177024,
+        "reference_parameters": 75002496,
+        "active_parameters_one_forward": 37501632,
+        "shared_parameter_elements": 24825472,
+        "sharing_ratio": 0.49475776004571337,
+        "storage_bytes_fp32": 200708096,
+        "storage_mb_fp32": 200.708096,
+        "active_flops_per_token": 39018496,
+        "reference_flops_per_token": 51937280,
+        "active_blocks": 12,
+        "unique_blocks": 16
+      },
+      "output_shape_ok": true,
+      "loss": 5.798223495483398,
+      "grads_finite": true,
+      "checkpoint_bytes": 200778936,
+      "checkpoint_max_abs_diff": 0.0,
+      "bpc": {
+        "text/train": 7.9691587171687575,
+        "text/val": 8.030779069076996,
+        "code/train": 8.480040060862764,
+        "code/val": 8.504052622541531,
+        "math/train": 8.375083520590115,
+        "math/val": 8.324198325748732
+      },
+      "train_step_seconds": 0.05117510000002312,
+      "peak_allocated_bytes": 1122066944,
+      "peak_reserved_bytes": 1241513984
+    },
+    {
+      "arch": "sparse_anet",
+      "params": {
+        "unique_trainable": 50177033,
+        "reference_parameters": 56383401,
+        "active_parameters_one_forward": 37501632,
+        "shared_parameter_elements": 6206368,
+        "sharing_ratio": 0.12368941782588062,
+        "storage_bytes_fp32": 200708132,
+        "storage_mb_fp32": 200.708132,
+        "active_flops_per_token": 39018496,
+        "reference_flops_per_token": 51937280,
+        "active_blocks": 12,
+        "unique_blocks": 16
+      },
+      "output_shape_ok": true,
+      "loss": 5.632652282714844,
+      "grads_finite": true,
+      "checkpoint_bytes": 200779435,
+      "checkpoint_max_abs_diff": 0.0,
+      "bpc": {
+        "text/train": 7.945425799280293,
+        "text/val": 8.024427061850028,
+        "code/train": 8.389350169409788,
+        "code/val": 8.451452760671048,
+        "math/train": 8.099461716560265,
+        "math/val": 8.017808825479527
+      },
+      "train_step_seconds": 0.353131600000097,
+      "peak_allocated_bytes": 1174862848,
+      "peak_reserved_bytes": 1289748480
+    },
+    {
+      "arch": "shared_backbone",
+      "params": {
+        "unique_trainable": 50178560,
+        "reference_parameters": 50178560,
+        "active_parameters_one_forward": 50178560,
+        "shared_parameter_elements": 0,
+        "sharing_ratio": 0.0,
+        "storage_bytes_fp32": 200714240,
+        "storage_mb_fp32": 200.71424,
+        "active_flops_per_token": 51937280,
+        "reference_flops_per_token": 51937280,
+        "active_blocks": 16,
+        "unique_blocks": 16
+      },
+      "output_shape_ok": true,
+      "loss": 5.3745317459106445,
+      "grads_finite": true,
+      "checkpoint_bytes": 200785259,
+      "checkpoint_max_abs_diff": 0.0,
+      "bpc": {
+        "text/train": 9.204696183544545,
+        "text/val": 8.968590489238142,
+        "code/train": 8.238996400684789,
+        "code/val": 8.500142768956817,
+        "math/train": 8.04690725810961,
+        "math/val": 8.010475485246737
+      },
+      "train_step_seconds": 0.06373109999992721,
+      "peak_allocated_bytes": 1275636736,
+      "peak_reserved_bytes": 1411383296
+    }
+  ],
+  "all_shape_ok": true,
+  "all_grads_finite": true,
+  "all_checkpoints_exact": true,
+  "all_splits_disjoint": true
+}

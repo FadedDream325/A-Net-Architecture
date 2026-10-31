@@ -224,3 +224,6 @@ experiments/scaling/results/preflight*/
 experiments/scaling/results/*/checkpoints/
 experiments/scaling/results/*/*.pt
 pytest-cache-files-*/
+
+# Phase 1 binary data pools (regenerate with phase1_data.py)
+experiments/anet_v2/lang50m/data60m/*.bin
