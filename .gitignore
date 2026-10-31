@@ -233,3 +233,7 @@ experiments/anet_v2/lang50m/results/phase1_pure/checkpoints/
 
 # Phase 1 no-terminal checkpoints
 experiments/anet_v2/lang50m/results/phase1_no_terminal_math12m/checkpoints/
+
+# Phase 1 isolated checkpoints
+experiments/anet_v2/lang50m/results/phase1_isolated_12m/checkpoints/
+experiments/anet_v2/lang50m/results/phase1_tcode_12m/checkpoints/

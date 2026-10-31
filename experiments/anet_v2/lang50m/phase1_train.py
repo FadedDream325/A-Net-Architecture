@@ -27,6 +27,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from experiments.anet_v2.lang50m.model import (
+    IsolatedWorkflowANetLM,
+    L1WorkflowANetLM,
     NoTerminalANetLM,
     SharedDepthANetLM,
     TransformerLM,
@@ -56,6 +58,10 @@ def make_model(arch: str):
         return SharedDepthANetLM()
     if arch == "anet_no_terminal":
         return NoTerminalANetLM()
+    if arch == "anet_l1_depth":
+        return L1WorkflowANetLM()
+    if arch == "anet_isolated":
+        return IsolatedWorkflowANetLM()
     raise KeyError(arch)
 
 

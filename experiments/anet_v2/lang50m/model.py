@@ -210,6 +210,87 @@ class NoTerminalANetLM(nn.Module):
         return self.heads[task](self.ln_f(z))
 
 
+class L1WorkflowANetLM(nn.Module):
+    """L1 + task workflow with depth matched to Transformer-12L.
+
+    L1 = 2 blocks (fixed), shared depth extension = 8 blocks, and each task
+    workflow owns 2 blocks: 2 + 8 + 2 = 12 sequential blocks.  There is no
+    terminal L1; each task uses its own workflow and task head.
+    """
+
+    def __init__(self, vocab: int = 256, d: int = 512, heads: int = 8, ffn: int = 2000,
+                 l1_blocks: int = 2, shared_blocks: int = 8, workflows: int = 3,
+                 own_blocks: int = 2, tasks: int = 3):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, d)
+        self.l1 = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(l1_blocks)])
+        self.shared = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(shared_blocks)])
+        self.workflows = nn.ModuleList([
+            nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(own_blocks)])
+            for _ in range(workflows)
+        ])
+        self.ln_f = nn.LayerNorm(d)
+        self.heads = nn.ModuleList([nn.Linear(d, vocab) for _ in range(tasks)])
+        self.workflows_n = workflows
+        self.mask = None
+
+    def _mask(self, T: int, device):
+        if self.mask is None or self.mask.size(0) != T or self.mask.device != device:
+            self.mask = torch.triu(torch.ones(T, T, device=device, dtype=torch.bool), diagonal=1)
+        return self.mask
+
+    def forward(self, x: torch.Tensor, task: int) -> torch.Tensor:
+        h = self.embed(x)
+        m = self._mask(x.size(1), x.device)
+        for block in self.l1:
+            h = block(h, m)
+        for block in self.shared:
+            h = block(h, m)
+        w = task % self.workflows_n
+        for block in self.workflows[w]:
+            h = block(h, m)
+        return self.heads[task](self.ln_f(h))
+
+
+class IsolatedWorkflowANetLM(nn.Module):
+    """L1 (2 blocks) + one fully isolated 10-block workflow per task.
+
+    L1 + workflow = 12 sequential blocks, matching Transformer-12L depth,
+    active parameters and FLOPs.  Workflows do not share parameters, do not
+    call each other, and there is no terminal L1.
+    """
+
+    def __init__(self, vocab: int = 256, d: int = 512, heads: int = 8, ffn: int = 2000,
+                 l1_blocks: int = 2, workflows: int = 3, blocks_per_workflow: int = 10,
+                 tasks: int = 3):
+        super().__init__()
+        self.embed = nn.Embedding(vocab, d)
+        self.l1 = nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(l1_blocks)])
+        self.workflows = nn.ModuleList([
+            nn.ModuleList([CausalBlock(d, heads, ffn) for _ in range(blocks_per_workflow)])
+            for _ in range(workflows)
+        ])
+        self.ln_f = nn.LayerNorm(d)
+        self.heads = nn.ModuleList([nn.Linear(d, vocab) for _ in range(tasks)])
+        self.workflows_n = workflows
+        self.mask = None
+
+    def _mask(self, T: int, device):
+        if self.mask is None or self.mask.size(0) != T or self.mask.device != device:
+            self.mask = torch.triu(torch.ones(T, T, device=device, dtype=torch.bool), diagonal=1)
+        return self.mask
+
+    def forward(self, x: torch.Tensor, task: int) -> torch.Tensor:
+        h = self.embed(x)
+        m = self._mask(x.size(1), x.device)
+        for block in self.l1:
+            h = block(h, m)
+        w = task % self.workflows_n
+        for block in self.workflows[w]:
+            h = block(h, m)
+        return self.heads[task](self.ln_f(h))
+
+
 def parameter_counts(model: nn.Module) -> dict:
     unique = sum(p.numel() for p in model.parameters() if p.requires_grad)
     shared_params = 0
@@ -226,6 +307,21 @@ def parameter_counts(model: nn.Module) -> dict:
         active += shared_params
         active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
         reference = unique + shared_params  # shared stack referenced by both active workflows
+    elif isinstance(model, IsolatedWorkflowANetLM):
+        shared_params = 0
+        active = sum(p.numel() for p in model.embed.parameters())
+        active += sum(p.numel() for b in model.l1 for p in b.parameters())
+        active += sum(p.numel() for b in model.workflows[0] for p in b.parameters())
+        active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
+        reference = unique
+    elif isinstance(model, L1WorkflowANetLM):
+        shared_params = sum(p.numel() for b in model.shared for p in b.parameters())
+        active = sum(p.numel() for p in model.embed.parameters())
+        active += sum(p.numel() for b in model.l1 for p in b.parameters())
+        active += shared_params
+        active += sum(p.numel() for b in model.workflows[0] for p in b.parameters())
+        active += sum(p.numel() for p in model.heads[0].parameters()) + model.ln_f.weight.numel() * 2
+        reference = unique
     elif isinstance(model, NoTerminalANetLM):
         shared_params = sum(p.numel() for b in model.shared for p in b.parameters())
         active = sum(p.numel() for p in model.embed.parameters())
