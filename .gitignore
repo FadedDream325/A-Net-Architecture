@@ -224,3 +224,16 @@ experiments/scaling/results/preflight*/
 experiments/scaling/results/*/checkpoints/
 experiments/scaling/results/*/*.pt
 pytest-cache-files-*/
+
+# Phase 1 binary data pools (regenerate with phase1_data.py)
+experiments/anet_v2/lang50m/data60m/*.bin
+
+# Phase 1 pure-domain checkpoints (large, regenerate with phase1_train.py)
+experiments/anet_v2/lang50m/results/phase1_pure/checkpoints/
+
+# Phase 1 no-terminal checkpoints
+experiments/anet_v2/lang50m/results/phase1_no_terminal_math12m/checkpoints/
+
+# Phase 1 isolated checkpoints
+experiments/anet_v2/lang50m/results/phase1_isolated_12m/checkpoints/
+experiments/anet_v2/lang50m/results/phase1_tcode_12m/checkpoints/

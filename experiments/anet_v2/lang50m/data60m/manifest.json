@@ -1,0 +1,146 @@
+{
+  "config": {
+    "pool_bytes": 30000000,
+    "out_dir": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m",
+    "batch": 16,
+    "seq": 128,
+    "seed": 2026
+  },
+  "files": {
+    "math_train": {
+      "bytes": 24000000,
+      "sha256": "02622714e215bd47f3c4744ee6ef3f135b9b25bc272a011546473e5d6fd3965d",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\math_train.bin"
+    },
+    "math_val": {
+      "bytes": 3000000,
+      "sha256": "655b38fee6992ca2c35ae7f2117e4c1671f4137b1c96f3407b545190edddbd28",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\math_val.bin"
+    },
+    "math_test": {
+      "bytes": 3000000,
+      "sha256": "6547eacec4f44a682037d092b43bbf19c69ea80281f1a89b5737818b323a7e05",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\math_test.bin"
+    },
+    "code_train": {
+      "bytes": 24000000,
+      "sha256": "a0178202786c156dc4de905dde79cfb3c23d5ef960283a56afb5d0f735741344",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\code_train.bin"
+    },
+    "code_val": {
+      "bytes": 2980930,
+      "sha256": "c52160306e4409b53a57330fa6f264ab795526a322f62c43ff27e8988ed9e67a",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\code_val.bin"
+    },
+    "code_test": {
+      "bytes": 3036456,
+      "sha256": "128c12da2705037e46572bfa74eef12c348fabd1231763835fe57fbfc2f054c3",
+      "path": "C:\\Users\\LANG\\DSH\\A-Net-Architecture\\experiments\\anet_v2\\lang50m\\data60m\\code_test.bin"
+    }
+  },
+  "ratios": [
+    {
+      "math_samples": 16,
+      "code_samples": 0,
+      "math_tokens": 2048,
+      "code_tokens": 0,
+      "total_tokens": 2048,
+      "mode": "batch",
+      "ratio_math": 1.0
+    },
+    {
+      "math_samples": 16,
+      "code_samples": 0,
+      "math_tokens": 2048,
+      "code_tokens": 0,
+      "total_tokens": 2048,
+      "mode": "boundary",
+      "ratio_math": 1.0
+    },
+    {
+      "math_samples": 12,
+      "code_samples": 4,
+      "math_tokens": 1536,
+      "code_tokens": 512,
+      "total_tokens": 2048,
+      "mode": "batch",
+      "ratio_math": 0.75
+    },
+    {
+      "math_samples": 12,
+      "code_samples": 4,
+      "math_tokens": 1536,
+      "code_tokens": 512,
+      "total_tokens": 2048,
+      "mode": "boundary",
+      "ratio_math": 0.75
+    },
+    {
+      "math_samples": 8,
+      "code_samples": 8,
+      "math_tokens": 1024,
+      "code_tokens": 1024,
+      "total_tokens": 2048,
+      "mode": "batch",
+      "ratio_math": 0.5
+    },
+    {
+      "math_samples": 8,
+      "code_samples": 8,
+      "math_tokens": 1024,
+      "code_tokens": 1024,
+      "total_tokens": 2048,
+      "mode": "boundary",
+      "ratio_math": 0.5
+    },
+    {
+      "math_samples": 4,
+      "code_samples": 12,
+      "math_tokens": 512,
+      "code_tokens": 1536,
+      "total_tokens": 2048,
+      "mode": "batch",
+      "ratio_math": 0.25
+    },
+    {
+      "math_samples": 4,
+      "code_samples": 12,
+      "math_tokens": 512,
+      "code_tokens": 1536,
+      "total_tokens": 2048,
+      "mode": "boundary",
+      "ratio_math": 0.25
+    },
+    {
+      "math_samples": 0,
+      "code_samples": 16,
+      "math_tokens": 0,
+      "code_tokens": 2048,
+      "total_tokens": 2048,
+      "mode": "batch",
+      "ratio_math": 0.0
+    },
+    {
+      "math_samples": 0,
+      "code_samples": 16,
+      "math_tokens": 0,
+      "code_tokens": 2048,
+      "total_tokens": 2048,
+      "mode": "boundary",
+      "ratio_math": 0.0
+    }
+  ],
+  "leakage": {
+    "math": {
+      "overlap_256gram": 0,
+      "train_bytes": 24000000,
+      "val_bytes": 3000000
+    },
+    "code": {
+      "overlap_256gram": 0,
+      "train_bytes": 24000000,
+      "val_bytes": 2980930
+    }
+  },
+  "code_files_used": 1877
+}

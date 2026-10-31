@@ -1,0 +1,1550 @@
+[
+  {
+    "arch": "transformer12",
+    "seed": 2026,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.48,
+    "details": [
+      {
+        "expr": "44 + 16",
+        "target": 60,
+        "generated": "50",
+        "parsed": 50,
+        "correct": false
+      },
+      {
+        "expr": "(191 * 52) + 659",
+        "target": 10591,
+        "generated": "12443",
+        "parsed": 12443,
+        "correct": false
+      },
+      {
+        "expr": "165 + 20",
+        "target": 185,
+        "generated": "185",
+        "parsed": 185,
+        "correct": true
+      },
+      {
+        "expr": "182 - 45",
+        "target": 137,
+        "generated": "137",
+        "parsed": 137,
+        "correct": true
+      },
+      {
+        "expr": "157 + 77",
+        "target": 234,
+        "generated": "234",
+        "parsed": 234,
+        "correct": true
+      },
+      {
+        "expr": "41 * 86",
+        "target": 3526,
+        "generated": "3446",
+        "parsed": 3446,
+        "correct": false
+      },
+      {
+        "expr": "25 - 94",
+        "target": -69,
+        "generated": "-71",
+        "parsed": -71,
+        "correct": false
+      },
+      {
+        "expr": "127 + 56",
+        "target": 183,
+        "generated": "183",
+        "parsed": 183,
+        "correct": true
+      },
+      {
+        "expr": "503 * 2",
+        "target": 1006,
+        "generated": "1066",
+        "parsed": 1066,
+        "correct": false
+      },
+      {
+        "expr": "471 - 4",
+        "target": 467,
+        "generated": "467",
+        "parsed": 467,
+        "correct": true
+      },
+      {
+        "expr": "433 - 53",
+        "target": 380,
+        "generated": "370",
+        "parsed": 370,
+        "correct": false
+      },
+      {
+        "expr": "240 - 34",
+        "target": 206,
+        "generated": "206",
+        "parsed": 206,
+        "correct": true
+      },
+      {
+        "expr": "156 + 63",
+        "target": 219,
+        "generated": "219",
+        "parsed": 219,
+        "correct": true
+      },
+      {
+        "expr": "(666 - 69) + 842",
+        "target": 1439,
+        "generated": "1574",
+        "parsed": 1574,
+        "correct": false
+      },
+      {
+        "expr": "230 + 86",
+        "target": 316,
+        "generated": "316",
+        "parsed": 316,
+        "correct": true
+      },
+      {
+        "expr": "76 * 62",
+        "target": 4712,
+        "generated": "4328",
+        "parsed": 4328,
+        "correct": false
+      },
+      {
+        "expr": "866 - 43",
+        "target": 823,
+        "generated": "823",
+        "parsed": 823,
+        "correct": true
+      },
+      {
+        "expr": "818 * 34",
+        "target": 27812,
+        "generated": "25444",
+        "parsed": 25444,
+        "correct": false
+      },
+      {
+        "expr": "316 - 79",
+        "target": 237,
+        "generated": "237",
+        "parsed": 237,
+        "correct": true
+      },
+      {
+        "expr": "721 - 28",
+        "target": 693,
+        "generated": "793",
+        "parsed": 793,
+        "correct": false
+      }
+    ]
+  },
+  {
+    "arch": "transformer12",
+    "seed": 2026,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.4,
+    "details": [
+      {
+        "prompt": "class Projection(Model):\n    \"\"\"Base class for all sky projections.\"\"\"\n\n    # Ra",
+        "continuation": "     #   #              ",
+        "pass": true
+      },
+      {
+        "prompt": "class StreamHandler(logging.StreamHandler):\n    \"\"\"\n    A specialized StreamHand",
+        "continuation": "     \"# indentherringing",
+        "pass": false
+      },
+      {
+        "prompt": "def test_read_write_existing_append_groups(tmp_path):\n    test_file = tmp_path /",
+        "continuation": "    # toright as a t a t",
+        "pass": true
+      },
+      {
+        "prompt": "from astropy.io import fits\nfrom astropy.io.fits.hdu.base import _ValidHDU\n\nfrom",
+        "continuation": "from .config import Conf",
+        "pass": true
+      },
+      {
+        "prompt": "import pytest\nfrom numpy.testing import assert_array_equal\n\n# LOCAL\nfrom astropy",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Test_SelectorArguments:\n    def test_create(self):\n        arguments = _Se",
+        "continuation": "         # assserre arg ",
+        "pass": true
+      },
+      {
+        "prompt": "def test_parquet_read_pandas(tmp_path):\n    \"\"\"Test reading a pandas parquet fil",
+        "continuation": "    t2",
+        "pass": true
+      },
+      {
+        "prompt": "import platform\n\nimport numpy as np\nimport pytest\nfrom numpy.testing import asse",
+        "continuation": "from astropy.utils impor",
+        "pass": false
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see PYFITS.rst\n\nimport mmap\nimpo",
+        "continuation": "import sys",
+        "pass": true
+      },
+      {
+        "prompt": "class Pix2Sky_HEALPixPolar(Pix2SkyProjection, HEALPix):\n    r\"\"\"\n    HEALPix pol",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import io\nimport os\nimport pathlib\nimport struct\nimport warnings\n",
+        "continuation": "import sys",
+        "pass": true
+      },
+      {
+        "prompt": "# STDLIB\nimport base64\nimport codecs\nimport gzip\nimport io\nimport json\n",
+        "continuation": "import codecs",
+        "pass": true
+      },
+      {
+        "prompt": "def test_meta_not_modified(tmp_path):\n    filename = tmp_path / \"test.fits\"\n    ",
+        "continuation": "     # toringintedinted ",
+        "pass": true
+      },
+      {
+        "prompt": "from astropy.table import Column, QTable, Table\nfrom astropy.time import Time, T",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from .table import BinTableHDU\n\n__all__ = [\"HDUList\", \"fitsopen\"]\n\n# FITS file s",
+        "continuation": "#                       ",
+        "pass": true
+      },
+      {
+        "prompt": "STATISTICS = [leastsquare]\n\n# Optimizers implemented in `astropy.modeling.optimi",
+        "continuation": "Optimization = Undefined",
+        "pass": true
+      },
+      {
+        "prompt": "from astropy.io.fits.hdu.image import ImageHDU\nfrom astropy.io.fits.header impor",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.io.fits.hdu.compressed._codecs import PLIO1\nfrom astropy.io.fits.hd",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import numpy as np\n\nfrom astropy.io.fits.column import FITS2NUMPY, ColDefs, Colu",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "conf = Conf()\n\n# Licensed under a 3-clause BSD style license - see LICENSE.rst\n\n",
+        "continuation": "import sys",
+        "pass": true
+      }
+    ]
+  },
+  {
+    "arch": "transformer12",
+    "seed": 2027,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.54,
+    "details": [
+      {
+        "expr": "780 + 6",
+        "target": 786,
+        "generated": "786",
+        "parsed": 786,
+        "correct": true
+      },
+      {
+        "expr": "967 + 71",
+        "target": 1038,
+        "generated": "1038",
+        "parsed": 1038,
+        "correct": true
+      },
+      {
+        "expr": "972 * 4",
+        "target": 3888,
+        "generated": "3128",
+        "parsed": 3128,
+        "correct": false
+      },
+      {
+        "expr": "(416 + 66) + 107",
+        "target": 589,
+        "generated": "663",
+        "parsed": 663,
+        "correct": false
+      },
+      {
+        "expr": "388 + 87",
+        "target": 475,
+        "generated": "475",
+        "parsed": 475,
+        "correct": true
+      },
+      {
+        "expr": "493 - 91",
+        "target": 402,
+        "generated": "402",
+        "parsed": 402,
+        "correct": true
+      },
+      {
+        "expr": "(484 + 54) + 332",
+        "target": 870,
+        "generated": "816",
+        "parsed": 816,
+        "correct": false
+      },
+      {
+        "expr": "720 - 19",
+        "target": 701,
+        "generated": "701",
+        "parsed": 701,
+        "correct": true
+      },
+      {
+        "expr": "990 * 85",
+        "target": 84150,
+        "generated": "81550",
+        "parsed": 81550,
+        "correct": false
+      },
+      {
+        "expr": "320 - 80",
+        "target": 240,
+        "generated": "240",
+        "parsed": 240,
+        "correct": true
+      },
+      {
+        "expr": "458 + 76",
+        "target": 534,
+        "generated": "534",
+        "parsed": 534,
+        "correct": true
+      },
+      {
+        "expr": "(185 - 40) + 763",
+        "target": 908,
+        "generated": "848",
+        "parsed": 848,
+        "correct": false
+      },
+      {
+        "expr": "70 * 16",
+        "target": 1120,
+        "generated": "1120",
+        "parsed": 1120,
+        "correct": true
+      },
+      {
+        "expr": "(112 * 81) + 554",
+        "target": 9626,
+        "generated": "11108",
+        "parsed": 11108,
+        "correct": false
+      },
+      {
+        "expr": "674 + 89",
+        "target": 763,
+        "generated": "763",
+        "parsed": 763,
+        "correct": true
+      },
+      {
+        "expr": "873 - 27",
+        "target": 846,
+        "generated": "846",
+        "parsed": 846,
+        "correct": true
+      },
+      {
+        "expr": "73 * 8",
+        "target": 584,
+        "generated": "514",
+        "parsed": 514,
+        "correct": false
+      },
+      {
+        "expr": "868 * 2",
+        "target": 1736,
+        "generated": "1684",
+        "parsed": 1684,
+        "correct": false
+      },
+      {
+        "expr": "775 - 90",
+        "target": 685,
+        "generated": "685",
+        "parsed": 685,
+        "correct": true
+      },
+      {
+        "expr": "814 - 88",
+        "target": 726,
+        "generated": "726",
+        "parsed": 726,
+        "correct": true
+      }
+    ]
+  },
+  {
+    "arch": "transformer12",
+    "seed": 2027,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.1,
+    "details": [
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see LICENSE.rst\n\"\"\"\nModels that ",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_binary2_bounded_variable_length_char_edge_cases():\n    \"\"\"\n    Test edg",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.time import Time\nfrom astropy.units import UnitScaleError\nfrom astr",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def match_files(paths):\n    if os.path.isfile(paths[0]) and os.path.isfile(paths",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_read_newlines_in_values():\n    \"\"\"Test reading a simple CSV file with n",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "@pytest.mark.skipif(not HAS_H5PY, reason=\"requires h5py\")\ndef test_read_write_si",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license\n\nimport os\n\nfrom setuptools import",
+        "continuation": "from astroid.config impo",
+        "pass": false
+      },
+      {
+        "prompt": "def _get_warning_and_exception_classes(prefix):\n    classes = []\n    for key, va",
+        "continuation": "        retuplefing = pr",
+        "pass": false
+      },
+      {
+        "prompt": "from math import comb\nfrom textwrap import indent\n\nimport numpy as np\n\nfrom .cor",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "__doctest_requires__ = {\"Spline1D\": [\"scipy\"]}\n\n\nclass _Spline(FittableModel):\n ",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from .core import CompoundModel, Model, ModelDefinitionError\nfrom .mappings impo",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.table import Column, QTable, Table\nfrom astropy.time import Time, T",
+        "continuation": "fr = astrestror = inapst",
+        "pass": true
+      },
+      {
+        "prompt": "class Test_FITSDiff(FitsTestCase):\n    def test_FITSDiff_report(self, home_is_te",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import sys\nimport warnings\nfrom contextlib import suppress\nfrom inspect import P",
+        "continuation": "import sys",
+        "pass": true
+      },
+      {
+        "prompt": "def test_read_dtypes(tbl_text):\n    \"\"\"Test reading a simple CSV file with diffe",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "\"\"\"\nPower law model variants.\n\"\"\"\n\n# pylint: disable=invalid-name\nimport numpy a",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "\"\"\"\nMixin columns for use in ascii/tests/test_ecsv.py, fits/tests/test_connect.p",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_table_write_help_jsviewer():\n    \"\"\"\n    Test dynamically created docum",
+        "continuation": "    if out == \"built-pro",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.io.fits.header import Header, _pad_length\nfrom astropy.io.fits.util",
+        "continuation": "from anapppiling ing ing",
+        "pass": false
+      },
+      {
+        "prompt": "def test_unicode_as_char():\n    config = {\"verify\": \"exception\"}\n    field = tre",
+        "continuation": "",
+        "pass": false
+      }
+    ]
+  },
+  {
+    "arch": "transformer12",
+    "seed": 2028,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.53,
+    "details": [
+      {
+        "expr": "(405 - 54) + 107",
+        "target": 458,
+        "generated": "563",
+        "parsed": 563,
+        "correct": false
+      },
+      {
+        "expr": "244 - 1",
+        "target": 243,
+        "generated": "243",
+        "parsed": 243,
+        "correct": true
+      },
+      {
+        "expr": "512 + 39",
+        "target": 551,
+        "generated": "551",
+        "parsed": 551,
+        "correct": true
+      },
+      {
+        "expr": "(924 * 91) + 190",
+        "target": 84274,
+        "generated": "8052",
+        "parsed": 8052,
+        "correct": false
+      },
+      {
+        "expr": "608 + 44",
+        "target": 652,
+        "generated": "652",
+        "parsed": 652,
+        "correct": true
+      },
+      {
+        "expr": "638 + 4",
+        "target": 642,
+        "generated": "642",
+        "parsed": 642,
+        "correct": true
+      },
+      {
+        "expr": "652 * 70",
+        "target": 45640,
+        "generated": "44540",
+        "parsed": 44540,
+        "correct": false
+      },
+      {
+        "expr": "249 + 29",
+        "target": 278,
+        "generated": "278",
+        "parsed": 278,
+        "correct": true
+      },
+      {
+        "expr": "386 * 14",
+        "target": 5404,
+        "generated": "5504",
+        "parsed": 5504,
+        "correct": false
+      },
+      {
+        "expr": "30 - 3",
+        "target": 27,
+        "generated": "27",
+        "parsed": 27,
+        "correct": true
+      },
+      {
+        "expr": "503 + 87",
+        "target": 590,
+        "generated": "590",
+        "parsed": 590,
+        "correct": true
+      },
+      {
+        "expr": "684 + 8",
+        "target": 692,
+        "generated": "692",
+        "parsed": 692,
+        "correct": true
+      },
+      {
+        "expr": "(731 - 83) + 746",
+        "target": 1394,
+        "generated": "1459",
+        "parsed": 1459,
+        "correct": false
+      },
+      {
+        "expr": "355 * 59",
+        "target": 20945,
+        "generated": "21555",
+        "parsed": 21555,
+        "correct": false
+      },
+      {
+        "expr": "451 + 81",
+        "target": 532,
+        "generated": "532",
+        "parsed": 532,
+        "correct": true
+      },
+      {
+        "expr": "140 + 15",
+        "target": 155,
+        "generated": "155",
+        "parsed": 155,
+        "correct": true
+      },
+      {
+        "expr": "995 * 23",
+        "target": 22885,
+        "generated": "22555",
+        "parsed": 22555,
+        "correct": false
+      },
+      {
+        "expr": "107 - 58",
+        "target": 49,
+        "generated": "59",
+        "parsed": 59,
+        "correct": false
+      },
+      {
+        "expr": "(640 + 5) + 143",
+        "target": 788,
+        "generated": "825",
+        "parsed": 825,
+        "correct": false
+      },
+      {
+        "expr": "475 + 21",
+        "target": 496,
+        "generated": "596",
+        "parsed": 596,
+        "correct": false
+      }
+    ]
+  },
+  {
+    "arch": "transformer12",
+    "seed": 2028,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.24,
+    "details": [
+      {
+        "prompt": "def test_votablefile_write(tmp_path):\n    vot = VOTableFile()\n    vot.params.app",
+        "continuation": " =   velelst = velelst =",
+        "pass": false
+      },
+      {
+        "prompt": "def _run_test_from_scratch_example():\n    from astropy.io.votable.tree import Fi",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "import sys\n\nfrom astropy import __version__\nfrom astropy.io import fits\nfrom ast",
+        "continuation": "from astropy.constants.u",
+        "pass": false
+      },
+      {
+        "prompt": "import pickle\n\nfrom astropy.utils.decorators import deprecated\n\n__all__ = [\"fnpi",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import copy\nimport functools\nimport inspect\nimport operator\nfrom collections imp",
+        "continuation": "from the target import t",
+        "pass": false
+      },
+      {
+        "prompt": "class Element:\n    \"\"\"\n    A base class for all classes that represent XML eleme",
+        "continuation": "    if not isinstance(el",
+        "pass": false
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see PYFITS.rst\n\n\nimport csv\nimpo",
+        "continuation": "from tkinter import Tk",
+        "pass": true
+      },
+      {
+        "prompt": "if HAS_BZ2:\n    import bz2\n\nif HAS_LZMA:\n    import lzma\n",
+        "continuation": "    import functools",
+        "pass": true
+      },
+      {
+        "prompt": "# https://github.com/astropy/astropy/issues/6604\nfrom astropy.utils.exceptions i",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Pix2Sky_HEALPixPolar(Pix2SkyProjection, HEALPix):\n    r\"\"\"\n    HEALPix pol",
+        "continuation": "    healphosed = healpho",
+        "pass": true
+      },
+      {
+        "prompt": "def test_fitsdiff_hdu_name(tmp_path):\n    \"\"\"Make sure diff report reports HDU n",
+        "continuation": " = = [\"thenderrrest ==\"e",
+        "pass": false
+      },
+      {
+        "prompt": "import os\nimport pydoc\nimport re\nimport sys\n\nfrom .base import IORegistryError\n",
+        "continuation": "from . import registry",
+        "pass": true
+      },
+      {
+        "prompt": "def original():\n    ORIGINAL = {}\n    ORIGINAL[\"readers\"] = deepcopy(default_reg",
+        "continuation": " = en exellle:",
+        "pass": false
+      },
+      {
+        "prompt": "def _unique_parnames(names):\n    \"\"\"\n    Given a list of parnames, including pos",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "import inspect\nimport warnings\nfrom functools import reduce, wraps\nfrom importli",
+        "continuation": "from the in project is n",
+        "pass": false
+      },
+      {
+        "prompt": "def test_unicode_as_char_binary():\n    config = {\"verify\": \"exception\"}\n\n    fie",
+        "continuation": "        if not iers.erre",
+        "pass": false
+      },
+      {
+        "prompt": "import re\nimport time\nimport warnings\nfrom io import BytesIO\n\nimport numpy as np",
+        "continuation": "from io import numpy",
+        "pass": true
+      },
+      {
+        "prompt": "from astropy import constants as const\nfrom astropy import units as u\nfrom astro",
+        "continuation": "fre isters in as No No N",
+        "pass": false
+      },
+      {
+        "prompt": "def test_read_write_memory():\n    with h5py.File(\"test\", \"w\", driver=\"core\", bac",
+        "continuation": " = = endend = exelllle, ",
+        "pass": false
+      },
+      {
+        "prompt": "import numpy as np\nimport pytest\nfrom numpy.testing import assert_array_equal\n\n#",
+        "continuation": "",
+        "pass": false
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2026,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.48,
+    "details": [
+      {
+        "expr": "44 + 16",
+        "target": 60,
+        "generated": "50",
+        "parsed": 50,
+        "correct": false
+      },
+      {
+        "expr": "(191 * 52) + 659",
+        "target": 10591,
+        "generated": "1233",
+        "parsed": 1233,
+        "correct": false
+      },
+      {
+        "expr": "165 + 20",
+        "target": 185,
+        "generated": "185",
+        "parsed": 185,
+        "correct": true
+      },
+      {
+        "expr": "182 - 45",
+        "target": 137,
+        "generated": "137",
+        "parsed": 137,
+        "correct": true
+      },
+      {
+        "expr": "157 + 77",
+        "target": 234,
+        "generated": "234",
+        "parsed": 234,
+        "correct": true
+      },
+      {
+        "expr": "41 * 86",
+        "target": 3526,
+        "generated": "3566",
+        "parsed": 3566,
+        "correct": false
+      },
+      {
+        "expr": "25 - 94",
+        "target": -69,
+        "generated": "-61",
+        "parsed": -61,
+        "correct": false
+      },
+      {
+        "expr": "127 + 56",
+        "target": 183,
+        "generated": "183",
+        "parsed": 183,
+        "correct": true
+      },
+      {
+        "expr": "503 * 2",
+        "target": 1006,
+        "generated": "1006",
+        "parsed": 1006,
+        "correct": true
+      },
+      {
+        "expr": "471 - 4",
+        "target": 467,
+        "generated": "467",
+        "parsed": 467,
+        "correct": true
+      },
+      {
+        "expr": "433 - 53",
+        "target": 380,
+        "generated": "380",
+        "parsed": 380,
+        "correct": true
+      },
+      {
+        "expr": "240 - 34",
+        "target": 206,
+        "generated": "206",
+        "parsed": 206,
+        "correct": true
+      },
+      {
+        "expr": "156 + 63",
+        "target": 219,
+        "generated": "219",
+        "parsed": 219,
+        "correct": true
+      },
+      {
+        "expr": "(666 - 69) + 842",
+        "target": 1439,
+        "generated": "1430",
+        "parsed": 1430,
+        "correct": false
+      },
+      {
+        "expr": "230 + 86",
+        "target": 316,
+        "generated": "216",
+        "parsed": 216,
+        "correct": false
+      },
+      {
+        "expr": "76 * 62",
+        "target": 4712,
+        "generated": "4332",
+        "parsed": 4332,
+        "correct": false
+      },
+      {
+        "expr": "866 - 43",
+        "target": 823,
+        "generated": "823",
+        "parsed": 823,
+        "correct": true
+      },
+      {
+        "expr": "818 * 34",
+        "target": 27812,
+        "generated": "25332",
+        "parsed": 25332,
+        "correct": false
+      },
+      {
+        "expr": "316 - 79",
+        "target": 237,
+        "generated": "237",
+        "parsed": 237,
+        "correct": true
+      },
+      {
+        "expr": "721 - 28",
+        "target": 693,
+        "generated": "693",
+        "parsed": 693,
+        "correct": true
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2026,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.27,
+    "details": [
+      {
+        "prompt": "class Projection(Model):\n    \"\"\"Base class for all sky projections.\"\"\"\n\n    # Ra",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class StreamHandler(logging.StreamHandler):\n    \"\"\"\n    A specialized StreamHand",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_read_write_existing_append_groups(tmp_path):\n    test_file = tmp_path /",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.io import fits\nfrom astropy.io.fits.hdu.base import _ValidHDU\n\nfrom",
+        "continuation": "from .config import conf",
+        "pass": true
+      },
+      {
+        "prompt": "import pytest\nfrom numpy.testing import assert_array_equal\n\n# LOCAL\nfrom astropy",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Test_SelectorArguments:\n    def test_create(self):\n        arguments = _Se",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_parquet_read_pandas(tmp_path):\n    \"\"\"Test reading a pandas parquet fil",
+        "continuation": "    if t2 == \"test_parat",
+        "pass": false
+      },
+      {
+        "prompt": "import platform\n\nimport numpy as np\nimport pytest\nfrom numpy.testing import asse",
+        "continuation": "import pytest",
+        "pass": true
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see PYFITS.rst\n\nimport mmap\nimpo",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Pix2Sky_HEALPixPolar(Pix2SkyProjection, HEALPix):\n    r\"\"\"\n    HEALPix pol",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import io\nimport os\nimport pathlib\nimport struct\nimport warnings\n",
+        "continuation": "import pathlib",
+        "pass": true
+      },
+      {
+        "prompt": "# STDLIB\nimport base64\nimport codecs\nimport gzip\nimport io\nimport json\n",
+        "continuation": "import sys",
+        "pass": true
+      },
+      {
+        "prompt": "def test_meta_not_modified(tmp_path):\n    filename = tmp_path / \"test.fits\"\n    ",
+        "continuation": "                        ",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.table import Column, QTable, Table\nfrom astropy.time import Time, T",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from .table import BinTableHDU\n\n__all__ = [\"HDUList\", \"fitsopen\"]\n\n# FITS file s",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "STATISTICS = [leastsquare]\n\n# Optimizers implemented in `astropy.modeling.optimi",
+        "continuation": "# ======================",
+        "pass": true
+      },
+      {
+        "prompt": "from astropy.io.fits.hdu.image import ImageHDU\nfrom astropy.io.fits.header impor",
+        "continuation": "from astrerepor",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.io.fits.hdu.compressed._codecs import PLIO1\nfrom astropy.io.fits.hd",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import numpy as np\n\nfrom astropy.io.fits.column import FITS2NUMPY, ColDefs, Colu",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "conf = Conf()\n\n# Licensed under a 3-clause BSD style license - see LICENSE.rst\n\n",
+        "continuation": "import os",
+        "pass": true
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2027,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.51,
+    "details": [
+      {
+        "expr": "780 + 6",
+        "target": 786,
+        "generated": "786",
+        "parsed": 786,
+        "correct": true
+      },
+      {
+        "expr": "967 + 71",
+        "target": 1038,
+        "generated": "1038",
+        "parsed": 1038,
+        "correct": true
+      },
+      {
+        "expr": "972 * 4",
+        "target": 3888,
+        "generated": "3692",
+        "parsed": 3692,
+        "correct": false
+      },
+      {
+        "expr": "(416 + 66) + 107",
+        "target": 589,
+        "generated": "519",
+        "parsed": 519,
+        "correct": false
+      },
+      {
+        "expr": "388 + 87",
+        "target": 475,
+        "generated": "475",
+        "parsed": 475,
+        "correct": true
+      },
+      {
+        "expr": "493 - 91",
+        "target": 402,
+        "generated": "402",
+        "parsed": 402,
+        "correct": true
+      },
+      {
+        "expr": "(484 + 54) + 332",
+        "target": 870,
+        "generated": "878",
+        "parsed": 878,
+        "correct": false
+      },
+      {
+        "expr": "720 - 19",
+        "target": 701,
+        "generated": "601",
+        "parsed": 601,
+        "correct": false
+      },
+      {
+        "expr": "990 * 85",
+        "target": 84150,
+        "generated": "86750",
+        "parsed": 86750,
+        "correct": false
+      },
+      {
+        "expr": "320 - 80",
+        "target": 240,
+        "generated": "250",
+        "parsed": 250,
+        "correct": false
+      },
+      {
+        "expr": "458 + 76",
+        "target": 534,
+        "generated": "534",
+        "parsed": 534,
+        "correct": true
+      },
+      {
+        "expr": "(185 - 40) + 763",
+        "target": 908,
+        "generated": "947",
+        "parsed": 947,
+        "correct": false
+      },
+      {
+        "expr": "70 * 16",
+        "target": 1120,
+        "generated": "1280",
+        "parsed": 1280,
+        "correct": false
+      },
+      {
+        "expr": "(112 * 81) + 554",
+        "target": 9626,
+        "generated": "11838",
+        "parsed": 11838,
+        "correct": false
+      },
+      {
+        "expr": "674 + 89",
+        "target": 763,
+        "generated": "763",
+        "parsed": 763,
+        "correct": true
+      },
+      {
+        "expr": "873 - 27",
+        "target": 846,
+        "generated": "846",
+        "parsed": 846,
+        "correct": true
+      },
+      {
+        "expr": "73 * 8",
+        "target": 584,
+        "generated": "504",
+        "parsed": 504,
+        "correct": false
+      },
+      {
+        "expr": "868 * 2",
+        "target": 1736,
+        "generated": "1636",
+        "parsed": 1636,
+        "correct": false
+      },
+      {
+        "expr": "775 - 90",
+        "target": 685,
+        "generated": "685",
+        "parsed": 685,
+        "correct": true
+      },
+      {
+        "expr": "814 - 88",
+        "target": 726,
+        "generated": "726",
+        "parsed": 726,
+        "correct": true
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2027,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.29,
+    "details": [
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see LICENSE.rst\n\"\"\"\nModels that ",
+        "continuation": "\"\"\"\"",
+        "pass": false
+      },
+      {
+        "prompt": "def test_binary2_bounded_variable_length_char_edge_cases():\n    \"\"\"\n    Test edg",
+        "continuation": "    votabs = votabs(vota",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.time import Time\nfrom astropy.units import UnitScaleError\nfrom astr",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def match_files(paths):\n    if os.path.isfile(paths[0]) and os.path.isfile(paths",
+        "continuation": "    dirnames = pathlib.p",
+        "pass": true
+      },
+      {
+        "prompt": "def test_read_newlines_in_values():\n    \"\"\"Test reading a simple CSV file with n",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "@pytest.mark.skipif(not HAS_H5PY, reason=\"requires h5py\")\ndef test_read_write_si",
+        "continuation": "    to = tmp_p_path = = ",
+        "pass": false
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license\n\nimport os\n\nfrom setuptools import",
+        "continuation": "from .. import (",
+        "pass": false
+      },
+      {
+        "prompt": "def _get_warning_and_exception_classes(prefix):\n    classes = []\n    for key, va",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from math import comb\nfrom textwrap import indent\n\nimport numpy as np\n\nfrom .cor",
+        "continuation": "import codecs",
+        "pass": true
+      },
+      {
+        "prompt": "__doctest_requires__ = {\"Spline1D\": [\"scipy\"]}\n\n\nclass _Spline(FittableModel):\n ",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from .core import CompoundModel, Model, ModelDefinitionError\nfrom .mappings impo",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.table import Column, QTable, Table\nfrom astropy.time import Time, T",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Test_FITSDiff(FitsTestCase):\n    def test_FITSDiff_report(self, home_is_te",
+        "continuation": " = = tex \"textextrmod te",
+        "pass": false
+      },
+      {
+        "prompt": "import sys\nimport warnings\nfrom contextlib import suppress\nfrom inspect import P",
+        "continuation": "import types",
+        "pass": true
+      },
+      {
+        "prompt": "def test_read_dtypes(tbl_text):\n    \"\"\"Test reading a simple CSV file with diffe",
+        "continuation": "     \"\"\"\"",
+        "pass": false
+      },
+      {
+        "prompt": "\"\"\"\nPower law model variants.\n\"\"\"\n\n# pylint: disable=invalid-name\nimport numpy a",
+        "continuation": "import codecs",
+        "pass": true
+      },
+      {
+        "prompt": "\"\"\"\nMixin columns for use in ascii/tests/test_ecsv.py, fits/tests/test_connect.p",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_table_write_help_jsviewer():\n    \"\"\"\n    Test dynamically created docum",
+        "continuation": "    for out in and regis",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy.io.fits.header import Header, _pad_length\nfrom astropy.io.fits.util",
+        "continuation": "from astrropy.utillls im",
+        "pass": false
+      },
+      {
+        "prompt": "def test_unicode_as_char():\n    config = {\"verify\": \"exception\"}\n    field = tre",
+        "continuation": "                        ",
+        "pass": false
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2028,
+    "domain": "math",
+    "n": 100,
+    "exact_match": 0.51,
+    "details": [
+      {
+        "expr": "(405 - 54) + 107",
+        "target": 458,
+        "generated": "512",
+        "parsed": 512,
+        "correct": false
+      },
+      {
+        "expr": "244 - 1",
+        "target": 243,
+        "generated": "243",
+        "parsed": 243,
+        "correct": true
+      },
+      {
+        "expr": "512 + 39",
+        "target": 551,
+        "generated": "551",
+        "parsed": 551,
+        "correct": true
+      },
+      {
+        "expr": "(924 * 91) + 190",
+        "target": 84274,
+        "generated": "81894",
+        "parsed": 81894,
+        "correct": false
+      },
+      {
+        "expr": "608 + 44",
+        "target": 652,
+        "generated": "652",
+        "parsed": 652,
+        "correct": true
+      },
+      {
+        "expr": "638 + 4",
+        "target": 642,
+        "generated": "642",
+        "parsed": 642,
+        "correct": true
+      },
+      {
+        "expr": "652 * 70",
+        "target": 45640,
+        "generated": "43540",
+        "parsed": 43540,
+        "correct": false
+      },
+      {
+        "expr": "249 + 29",
+        "target": 278,
+        "generated": "278",
+        "parsed": 278,
+        "correct": true
+      },
+      {
+        "expr": "386 * 14",
+        "target": 5404,
+        "generated": "5884",
+        "parsed": 5884,
+        "correct": false
+      },
+      {
+        "expr": "30 - 3",
+        "target": 27,
+        "generated": "27",
+        "parsed": 27,
+        "correct": true
+      },
+      {
+        "expr": "503 + 87",
+        "target": 590,
+        "generated": "590",
+        "parsed": 590,
+        "correct": true
+      },
+      {
+        "expr": "684 + 8",
+        "target": 692,
+        "generated": "692",
+        "parsed": 692,
+        "correct": true
+      },
+      {
+        "expr": "(731 - 83) + 746",
+        "target": 1394,
+        "generated": "1587",
+        "parsed": 1587,
+        "correct": false
+      },
+      {
+        "expr": "355 * 59",
+        "target": 20945,
+        "generated": "19885",
+        "parsed": 19885,
+        "correct": false
+      },
+      {
+        "expr": "451 + 81",
+        "target": 532,
+        "generated": "532",
+        "parsed": 532,
+        "correct": true
+      },
+      {
+        "expr": "140 + 15",
+        "target": 155,
+        "generated": "155",
+        "parsed": 155,
+        "correct": true
+      },
+      {
+        "expr": "995 * 23",
+        "target": 22885,
+        "generated": "21885",
+        "parsed": 21885,
+        "correct": false
+      },
+      {
+        "expr": "107 - 58",
+        "target": 49,
+        "generated": "49",
+        "parsed": 49,
+        "correct": true
+      },
+      {
+        "expr": "(640 + 5) + 143",
+        "target": 788,
+        "generated": "787",
+        "parsed": 787,
+        "correct": false
+      },
+      {
+        "expr": "475 + 21",
+        "target": 496,
+        "generated": "596",
+        "parsed": 596,
+        "correct": false
+      }
+    ]
+  },
+  {
+    "arch": "anet_isolated",
+    "seed": 2028,
+    "domain": "code",
+    "n": 100,
+    "pass_at_1": 0.1,
+    "details": [
+      {
+        "prompt": "def test_votablefile_write(tmp_path):\n    vot = VOTableFile()\n    vot.params.app",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def _run_test_from_scratch_example():\n    from astropy.io.votable.tree import Fi",
+        "continuation": "    from astropy.expr im",
+        "pass": false
+      },
+      {
+        "prompt": "import sys\n\nfrom astropy import __version__\nfrom astropy.io import fits\nfrom ast",
+        "continuation": "from astropy.util import",
+        "pass": false
+      },
+      {
+        "prompt": "import pickle\n\nfrom astropy.utils.decorators import deprecated\n\n__all__ = [\"fnpi",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import copy\nimport functools\nimport inspect\nimport operator\nfrom collections imp",
+        "continuation": "from anaconda_project.in",
+        "pass": false
+      },
+      {
+        "prompt": "class Element:\n    \"\"\"\n    A base class for all classes that represent XML eleme",
+        "continuation": "    if isinstance(all_cl",
+        "pass": false
+      },
+      {
+        "prompt": "# Licensed under a 3-clause BSD style license - see PYFITS.rst\n\n\nimport csv\nimpo",
+        "continuation": "import sys",
+        "pass": true
+      },
+      {
+        "prompt": "if HAS_BZ2:\n    import bz2\n\nif HAS_LZMA:\n    import lzma\n",
+        "continuation": "    import sys",
+        "pass": true
+      },
+      {
+        "prompt": "# https://github.com/astropy/astropy/issues/6604\nfrom astropy.utils.exceptions i",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "class Pix2Sky_HEALPixPolar(Pix2SkyProjection, HEALPix):\n    r\"\"\"\n    HEALPix pol",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_fitsdiff_hdu_name(tmp_path):\n    \"\"\"Make sure diff report reports HDU n",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import os\nimport pydoc\nimport re\nimport sys\n\nfrom .base import IORegistryError\n",
+        "continuation": "from . import Any, impor",
+        "pass": true
+      },
+      {
+        "prompt": "def original():\n    ORIGINAL = {}\n    ORIGINAL[\"readers\"] = deepcopy(default_reg",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def _unique_parnames(names):\n    \"\"\"\n    Given a list of parnames, including pos",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import inspect\nimport warnings\nfrom functools import reduce, wraps\nfrom importli",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_unicode_as_char_binary():\n    config = {\"verify\": \"exception\"}\n\n    fie",
+        "continuation": "     field_patatager.ate",
+        "pass": false
+      },
+      {
+        "prompt": "import re\nimport time\nimport warnings\nfrom io import BytesIO\n\nimport numpy as np",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "from astropy import constants as const\nfrom astropy import units as u\nfrom astro",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "def test_read_write_memory():\n    with h5py.File(\"test\", \"w\", driver=\"core\", bac",
+        "continuation": "",
+        "pass": false
+      },
+      {
+        "prompt": "import numpy as np\nimport pytest\nfrom numpy.testing import assert_array_equal\n\n#",
+        "continuation": "",
+        "pass": false
+      }
+    ]
+  }
+]
