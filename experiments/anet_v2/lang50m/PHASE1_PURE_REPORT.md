@@ -33,10 +33,12 @@
 
 ## 2. 参数与成本
 
-| 模型 | 唯一参数 | 激活参数 | 激活 FLOPs/token | 训练峰值 |
-|---|---:|---:|---:|---:|
-| Transformer-12L | 37,503,168 | 37,503,168 | 40,591,360 | 约 1.60 GB |
-| Shared-Depth A-Net | 50,177,024 | 37,501,632 | 40,591,360 | 约 1.65 GB |
+| 模型 | 唯一参数 | 激活参数 | 激活 FLOPs/token | 训练 allocated 峰值 | 训练 reserved 峰值 |
+|---|---:|---:|---:|---:|---:|
+| Transformer-12L | 37,503,168 | 37,503,168 | 40,591,360 | 1.556 GB 均值 / 1.607 GB 最大 | 1.665 GB 均值 / 1.727 GB 最大 |
+| Shared-Depth A-Net | 50,177,024 | 37,501,632 | 40,591,360 | 1.650 GB 均值 / 1.651 GB 最大 | 1.772 GB 均值 / 1.781 GB 最大 |
+
+测量口径：torch.cuda.max_memory_allocated / max_memory_reserved，batch=16、seq=128、FP32、纯 math 或纯 code 训练。A-Net 比 Transformer 多约 0.094 GB allocated（+6.0%）和 0.107 GB reserved（+6.4%）。
 
 - 12 个 checkpoint 约 2.4 GB；只用于评测，未提交。
 - 每 run 训练 165–180 秒。
