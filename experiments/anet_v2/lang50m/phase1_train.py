@@ -111,6 +111,8 @@ def main() -> int:
     p.add_argument("--seq", type=int, default=128)
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--quick", action="store_true")
+    p.add_argument("--save-checkpoints", action="store_true")
+    p.add_argument("--checkpoint-dir", type=Path, default=None)
     p.add_argument("--out-dir", type=Path, default=Path(__file__).resolve().parent / "results" / "phase1_pilot")
     args = p.parse_args()
     if args.quick:
@@ -127,8 +129,11 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
     raw = out / "raw_runs.jsonl"
     args.out_dir = out
+    ckpt_dir = args.checkpoint_dir or (out / "checkpoints")
+    if args.save_checkpoints:
+        ckpt_dir.mkdir(parents=True, exist_ok=True)
     (out / "config.json").write_text(
-        json.dumps({**vars(args), "out_dir": str(out)}, indent=2, ensure_ascii=False),
+        json.dumps({**vars(args), "out_dir": str(out), "checkpoint_dir": str(ckpt_dir)}, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
 
@@ -194,6 +199,12 @@ def main() -> int:
                         "peak_allocated_bytes": int(torch.cuda.max_memory_allocated()),
                         "peak_reserved_bytes": int(torch.cuda.max_memory_reserved()),
                     }
+                    if args.save_checkpoints:
+                        ckpt = ckpt_dir / f"{arch}__s{seed}__m{ratio}__{mode}.pt"
+                        torch.save({"arch": arch, "seed": seed, "ratio_math": ratio,
+                                    "mode": mode, "state_dict": model.state_dict()}, ckpt)
+                        rec["checkpoint"] = str(ckpt)
+                        rec["checkpoint_bytes"] = ckpt.stat().st_size
                     with open(raw, "a", encoding="utf-8") as fh:
                         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
                         fh.flush()
